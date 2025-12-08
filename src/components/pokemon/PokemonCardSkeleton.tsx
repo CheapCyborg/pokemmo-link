@@ -1,4 +1,4 @@
-// src/components/PokemonCardSkeleton.tsx
+// src/components/pokemon/PokemonCardSkeleton.tsx
 export function PokemonCardSkeleton() {
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden animate-pulse">

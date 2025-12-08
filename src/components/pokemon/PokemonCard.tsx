@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import { PokemonDetailsContent } from "@/components/PokemonDetailsContent";
+import { PokemonStats } from "@/components/pokemon/PokemonStats";
 import {
   getNatureBadgeClass,
   getTypeBadgeClass,
@@ -9,10 +9,10 @@ import type { EnrichedPokemon } from "@/types/pokemon";
 
 export const PokemonCard = ({
   pokemon,
-  onClick,
+  openDetailsAction,
 }: {
   pokemon: EnrichedPokemon;
-  onClick: () => void;
+  openDetailsAction: () => void;
 }) => {
   const nickname = pokemon.identity.nickname?.trim();
   const hasNickname = nickname && !nickname.startsWith("Species ");
@@ -23,7 +23,7 @@ export const PokemonCard = ({
   const types = pokemon.species?.types || [];
 
   return (
-    <button onClick={onClick} className="text-left w-full">
+    <button onClick={openDetailsAction} className="text-left w-full">
       <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
         <div className="p-3 flex items-center space-x-3 bg-linear-to-br from-gray-50 to-gray-100 border-b border-gray-100 relative">
           <div className="absolute top-2 right-2 bg-gray-800 text-white text-[10px] px-2 py-0.5 rounded-full font-bold z-10 shadow-sm">
@@ -66,7 +66,7 @@ export const PokemonCard = ({
           </div>
         </div>
 
-        <PokemonDetailsContent pokemon={pokemon} />
+        <PokemonStats pokemon={pokemon} />
 
         <div className="bg-gray-50 px-3 py-2 text-[9px] text-gray-400 border-t border-gray-100 flex justify-between items-center">
           <span className="truncate">OT: {pokemon.identity.ot_name}</span>

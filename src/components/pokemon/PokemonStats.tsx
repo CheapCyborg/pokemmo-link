@@ -1,9 +1,9 @@
 "use client";
-import { StatRow } from "@/components/StatRow";
+import { StatRow } from "@/components/pokemon/StatRow";
 import { NATURE_MULTIPLIERS } from "@/lib/poke";
 import type { EnrichedPokemon } from "@/types/pokemon";
 
-export const PokemonDetailsContent = ({
+export const PokemonStats = ({
   pokemon,
 }: {
   pokemon: EnrichedPokemon;
