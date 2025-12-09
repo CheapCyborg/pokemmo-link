@@ -2,13 +2,13 @@
 
 import { PokemonStats } from "@/components/pokemon/PokemonStats";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { usePokeApi } from "@/hooks/usePokeApi";
-import { getNatureBadgeClass, toTitleCase } from "@/lib/poke";
+import { getNatureBadgeClass, getTypeBadgeClass, toTitleCase } from "@/lib/poke";
 import type { EnrichedPokemon } from "@/types/pokemon";
 
 interface PokemonDetailsModalProps {
@@ -16,6 +16,7 @@ interface PokemonDetailsModalProps {
   onOpenChange: (open: boolean) => void;
   pokemon: EnrichedPokemon | null | undefined;
 }
+
 
 export function PokemonDetailsModal({
   open,
@@ -26,6 +27,8 @@ export function PokemonDetailsModal({
     "move",
     open && pokemon?.moves ? pokemon.moves.map((m) => m.move_id) : []
   );
+  
+  const types = pokemon?.species?.types || [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -71,7 +74,13 @@ export function PokemonDetailsModal({
                   )}`}>
                   {pokemon.state.nature}
                 </span>
-
+                {types.map((type) => (
+                <span
+                  key={type}
+                  className={`inline-block px-1.5 py-0.5 text-[9px] rounded-md font-bold border uppercase ${getTypeBadgeClass(type)}`}>
+                  {type}
+                </span>
+              ))}
                 {!!pokemon.pokeapi_override && (
                   <span className="px-2 py-0.5 text-[11px] rounded-md font-bold border bg-slate-100 text-slate-700 border-slate-200">
                     pokeapi: {pokemon.pokeapi_override}
@@ -119,7 +128,7 @@ export function PokemonDetailsModal({
                             <>
                               <div className="flex gap-2 mb-1.5 items-center">
                                 {!!move.type && (
-                                  <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-bold uppercase">
+                                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${getTypeBadgeClass(move.type)}`}>
                                     {move.type}
                                   </span>
                                 )}
