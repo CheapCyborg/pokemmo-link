@@ -114,6 +114,15 @@ export const calculateGender = (
   return genderByte >= threshold ? "male" : "female";
 };
 
+export const getSpriteUrl = (speciesId: number) => {
+  // Use Gen 5 animated sprites for Gen 1-5 (IDs 1-649)
+  if (speciesId <= 649) {
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${speciesId}.gif`;
+  }
+  // Fallback for newer gens
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${speciesId}.png`;
+};
+
 /**
  * Enrich a PokeDumpMon with species data from PokeAPI
  * This creates a unified object that has everything the UI needs
@@ -198,8 +207,9 @@ export const enrichPokemon = (
       name: apiData.name,
       displayName: toTitleCase(apiData.name),
       sprite:
+        apiData.sprites.animated ||
         apiData.sprites.front_default ||
-        `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.identity.species_id}.png`,
+        getSpriteUrl(pokemon.identity.species_id),
       types: apiData.types || [],
       baseStats,
       genderRate: apiData.gender_rate,

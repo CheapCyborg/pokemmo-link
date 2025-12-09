@@ -73,6 +73,7 @@ export type CachedPokemon = {
   name: string;
   sprites: {
     front_default?: string | null;
+    animated?: string | null;
     other?: unknown;
   };
   stats: Record<string, number>;

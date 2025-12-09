@@ -35,7 +35,7 @@ const caches = {
 
 // LocalStorage keys
 const STORAGE_KEYS = {
-  pokemon: "pokemmo-link-pokemon-cache-v4",
+  pokemon: "pokemmo-link-pokemon-cache-v5",
   move: "pokemmo-link-move-cache-v2",
 };
 

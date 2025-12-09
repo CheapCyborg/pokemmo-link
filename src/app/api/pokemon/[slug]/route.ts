@@ -8,6 +8,15 @@ type PokeApiPokemon = {
   sprites?: {
     front_default?: string | null;
     other?: unknown;
+    versions?: {
+      "generation-v"?: {
+        "black-white"?: {
+          animated?: {
+            front_default?: string | null;
+          };
+        };
+      };
+    };
   };
   stats?: Array<{ stat?: { name?: string }; base_stat: number }>;
   types?: Array<{ type?: { name?: string } }>;
@@ -107,6 +116,9 @@ export async function GET(
     name: json.name,
     sprites: {
       front_default: json.sprites?.front_default ?? null,
+      animated:
+        json.sprites?.versions?.["generation-v"]?.["black-white"]?.animated
+          ?.front_default ?? null,
     },
     stats,
     types,

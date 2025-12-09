@@ -16,8 +16,9 @@ export const PokemonCard = ({
   
   const displayName = hasNickname ? nickname : (pokemon.species?.displayName || `Species ${pokemon.identity.species_id}`);
   const speciesName = pokemon.species?.displayName || `Species ${pokemon.identity.species_id}`;
-  // Use Generation VII icons for the "Box" look (40x30 pixel art)
-  const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/icons/${pokemon.identity.species_id}.png`;
+  
+  // Use the enriched sprite (animated/form-aware) if available, otherwise fallback to Gen 7 icon
+  const spriteUrl = pokemon.species?.sprite || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-vii/icons/${pokemon.identity.species_id}.png`;
   const types = pokemon.species?.types || [];
 
   return (
@@ -33,7 +34,7 @@ export const PokemonCard = ({
               <img
                 src={spriteUrl}
                 alt={displayName}
-                className="w-12 h-12 object-contain [image-rendering:pixelated]"
+                className="w-14 h-14 object-contain [image-rendering:pixelated]"
                 onError={(e) => {
                   // Fallback to regular sprite if icon fails
                   e.currentTarget.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.identity.species_id}.png`;

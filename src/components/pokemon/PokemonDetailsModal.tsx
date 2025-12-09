@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { usePokeApi } from "@/hooks/usePokeApi";
-import { toTitleCase } from "@/lib/poke";
+import { getSpriteUrl, toTitleCase } from "@/lib/poke";
 import type { EnrichedPokemon } from "@/types/pokemon";
 import { Heart, Mars, Venus, Volume2 } from "lucide-react";
 
@@ -53,15 +53,16 @@ export function PokemonDetailsModal({
                 <img
                   src={
                     pokemon.species?.sprite ||
-                    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.identity.species_id}.png`
+                    getSpriteUrl(pokemon.identity.species_id)
                   }
                   alt={
                     pokemon.species?.displayName ||
                     `Species ${pokemon.identity.species_id}`
                   }
-                  width={96}
-                  height={96}
-                  className="rounded-md"
+                  className="w-16 h-16 object-contain [image-rendering:pixelated] rounded-md"
+                  onError={(e) => {
+                    e.currentTarget.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.identity.species_id}.png`;
+                  }}
                 />
                 <div className="min-w-0 grow">
                   <div className="flex items-center gap-2">
