@@ -1,5 +1,6 @@
 "use client";
 
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Box, Database } from "lucide-react";
 import React from "react";
 
@@ -21,17 +22,19 @@ export const DashboardHeader = ({
           <Box className="text-white" size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             PokeMMO Link
           </h1>
-          <p className="text-xs text-slate-500 font-medium">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
             Real-time Companion App
           </p>
         </div>
       </div>
 
       <div className="flex items-center space-x-4">
-        <label className="cursor-pointer px-3 py-1 rounded-full text-xs font-bold border bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50 transition flex items-center">
+        <ThemeToggle />
+        
+        <label className="cursor-pointer px-3 py-1 rounded-full text-xs font-bold border bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900 hover:bg-indigo-50 dark:hover:bg-slate-700 transition flex items-center">
           <Database size={14} className="mr-2" />
           Load Dump
           <input
@@ -45,8 +48,8 @@ export const DashboardHeader = ({
         <div
           className={`flex items-center px-3 py-1 rounded-full text-xs font-bold border ${
             isLive
-              ? "bg-green-100 text-green-700 border-green-300"
-              : "bg-gray-200 text-gray-600 border-gray-300"
+              ? "bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+              : "bg-gray-200 text-gray-600 border-gray-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
           }`}>
           <div
             className={`w-2 h-2 rounded-full mr-2 ${

@@ -17,15 +17,15 @@ export const StatRow = ({
   color: string;
   natureEffect?: number;
 }) => {
-  let labelColor = "text-gray-500";
+  let labelColor = "text-gray-500 dark:text-gray-400";
   let sign = null;
 
   if (natureEffect === 1.1) {
-    labelColor = "text-red-600";
-    sign = <span className="text-red-600 ml-0.5">+</span>;
+    labelColor = "text-red-600 dark:text-red-400";
+    sign = <span className="text-red-600 dark:text-red-400 ml-0.5">+</span>;
   } else if (natureEffect === 0.9) {
-    labelColor = "text-blue-600";
-    sign = <span className="text-blue-600 ml-0.5">-</span>;
+    labelColor = "text-blue-600 dark:text-blue-400";
+    sign = <span className="text-blue-600 dark:text-blue-400 ml-0.5">-</span>;
   }
 
   return (
@@ -35,11 +35,11 @@ export const StatRow = ({
         {label}
         {sign}
       </span>
-      <span className="w-10 text-right font-bold text-gray-800 mr-3">
+      <span className="w-10 text-right font-bold text-gray-800 dark:text-gray-100 mr-3">
         {stat}
       </span>
 
-      <div className="grow h-2 bg-gray-100 rounded-full mr-3 relative overflow-hidden">
+      <div className="grow h-2 bg-gray-100 dark:bg-slate-800 rounded-full mr-3 relative overflow-hidden">
         <div
           className={`h-full rounded-full ${color}`}
           style={{ width: `${(stat / maxStat) * 100}%` }}

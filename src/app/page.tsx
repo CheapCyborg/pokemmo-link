@@ -97,7 +97,7 @@ export default function Page() {
     : null;
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans text-gray-800 p-4 md:p-8">
+    <div className="min-h-screen font-sans p-4 md:p-8">
       <DashboardHeader
         isLive={isLive}
         status={status}
@@ -115,7 +115,7 @@ export default function Page() {
 
         {/* Main Content */}
         <div className="lg:col-span-3">
-          <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 mb-6 flex items-center gap-3">
+          <div className="bg-white dark:bg-slate-900 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 mb-6 flex items-center gap-3">
             <div className="relative grow">
               <input
                 type="text"
@@ -124,7 +124,7 @@ export default function Page() {
                 }
                 onChange={(e) => setViewingProfileId(e.target.value)}
                 placeholder="Spectate a Friend..."
-                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition text-sm"
+                className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
               />
               <Search
                 size={16}
@@ -135,7 +135,7 @@ export default function Page() {
             {viewingProfileId !== userProfileId && (
               <button
                 onClick={() => setViewingProfileId(userProfileId)}
-                className="px-3 py-2 bg-indigo-50 text-indigo-600 font-bold text-xs rounded-lg hover:bg-indigo-100 transition">
+                className="px-3 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold text-xs rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition">
                 Back to Me
               </button>
             )}
@@ -145,14 +145,14 @@ export default function Page() {
                 partyQuery.refetch();
                 daycareQuery.refetch();
               }}
-              className="p-2 text-slate-400 hover:text-indigo-600 transition"
+              className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
               title="Refresh">
               <RefreshCw size={18} />
             </button>
           </div>
 
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-800 flex items-center">
+            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center">
               {activeTab === "party" ? "Active Party" : "Daycare"}
               {!!lastUpdated && (
                 <span className="ml-3 text-[10px] font-normal text-slate-400">
@@ -160,7 +160,7 @@ export default function Page() {
                 </span>
               )}
             </h2>
-            <span className="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <span className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
               {countPill}
             </span>
           </div>
@@ -182,11 +182,11 @@ export default function Page() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border-2 border-dashed border-slate-200">
-              <div className="bg-slate-50 p-4 rounded-full mb-4">
-                <Box size={32} className="text-slate-300" />
+            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+              <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-full mb-4">
+                <Box size={32} className="text-slate-300 dark:text-slate-600" />
               </div>
-              <p className="text-slate-500 font-medium text-sm">
+              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">
                 {hasError
                   ? "Connection error. Please try again."
                   : "No data available."}

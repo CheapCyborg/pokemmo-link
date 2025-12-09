@@ -15,63 +15,7 @@ export const getPokeApiSlug = (p: PokeDumpMon) => {
   return String(p.identity.species_id);
 };
 
-/**
- * Map nature names to Tailwind badge classes based on boosted stat
- */
-export const getNatureBadgeClass = (nature?: string): string => {
-  if (!nature) return "bg-slate-100 text-slate-700 border-slate-200";
 
-  const mods = NATURE_MULTIPLIERS[nature];
-  if (!mods || Object.keys(mods).length === 0) {
-    return "bg-slate-100 text-slate-700 border-slate-200";
-  }
-
-  const boostedStat = Object.entries(mods).find(
-    ([, value]) => value === 1.1
-  )?.[0];
-
-  const statColors: Record<string, string> = {
-    atk: "bg-red-100 text-red-700 border-red-200",
-    def: "bg-orange-100 text-orange-700 border-orange-200",
-    spa: "bg-blue-100 text-blue-700 border-blue-200",
-    spd: "bg-purple-100 text-purple-700 border-purple-200",
-    spe: "bg-pink-100 text-pink-700 border-pink-200",
-  };
-
-  return boostedStat && statColors[boostedStat]
-    ? statColors[boostedStat]
-    : "bg-slate-100 text-slate-700 border-slate-200";
-};
-
-/**
- * Get Tailwind classes for Pokemon type badges (official game colors)
- */
-export const getTypeBadgeClass = (type: string): string => {
-  const typeColors: Record<string, string> = {
-    normal: "bg-[#A8A878] text-white border-[#6D6D4E]",
-    fire: "bg-[#F08030] text-white border-[#9C531F]",
-    water: "bg-[#6890F0] text-white border-[#445E9C]",
-    electric: "bg-[#F8D030] text-gray-800 border-[#A1871F]",
-    grass: "bg-[#78C850] text-white border-[#4E8234]",
-    ice: "bg-[#98D8D8] text-gray-800 border-[#638D8D]",
-    fighting: "bg-[#C03028] text-white border-[#7D1F1A]",
-    poison: "bg-[#A040A0] text-white border-[#682A68]",
-    ground: "bg-[#E0C068] text-gray-800 border-[#927D44]",
-    flying: "bg-[#A890F0] text-white border-[#6D5E9C]",
-    psychic: "bg-[#F85888] text-white border-[#A13959]",
-    bug: "bg-[#A8B820] text-white border-[#6D7815]",
-    rock: "bg-[#B8A038] text-white border-[#786824]",
-    ghost: "bg-[#705898] text-white border-[#493963]",
-    dragon: "bg-[#7038F8] text-white border-[#4924A1]",
-    dark: "bg-[#705848] text-white border-[#49392F]",
-    steel: "bg-[#B8B8D0] text-gray-800 border-[#787887]",
-    fairy: "bg-[#EE99AC] text-gray-800 border-[#9B6470]",
-  };
-
-  return (
-    typeColors[type.toLowerCase()] || "bg-gray-400 text-white border-gray-600"
-  );
-};
 
 export const NATURE_MULTIPLIERS: Record<string, Record<string, number>> = {
   Adamant: { atk: 1.1, spa: 0.9 },
@@ -145,6 +89,10 @@ export const calculateGender = (
 ): "male" | "female" | "genderless" => {
   // Genderless species
   if (genderRatio === -1) return "genderless";
+  // Always male
+  if (genderRatio === 0) return "male";
+  // Always female
+  if (genderRatio === 8) return "female";
 
   // Get last byte of personality value (handle negative values)
   // Convert to unsigned 32-bit int first, then get last byte
@@ -153,19 +101,17 @@ export const calculateGender = (
 
   // Map gender ratio to threshold
   const thresholds: Record<number, number> = {
-    0: 0, // Always male (0% female)
     1: 31, // 87.5% male
     2: 63, // 75% male
     4: 127, // 50% male
     6: 191, // 25% male
     7: 225, // 12.5% male
-    8: 254, // Always female (100% female)
   };
 
   const threshold = thresholds[genderRatio] ?? 127; // Default to 50/50
 
-  // PokeMMO uses inverted logic: < threshold = male, >= threshold = female
-  return genderByte < threshold ? "male" : "female";
+  // Standard logic: < threshold = female, >= threshold = male
+  return genderByte >= threshold ? "male" : "female";
 };
 
 /**
