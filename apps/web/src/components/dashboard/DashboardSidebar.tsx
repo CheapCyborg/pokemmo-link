@@ -1,13 +1,13 @@
 "use client";
 
 import { FriendCard } from "@/components/dashboard/FriendCard";
-import { Clipboard, Database, LayoutGrid, User, Users } from "lucide-react";
+import { Box, Clipboard, Database, LayoutGrid, User, Users } from "lucide-react";
 
 interface DashboardSidebarProps {
   playerName: string;
   userProfileId: string;
-  activeTab: "party" | "pc";
-  setActiveTab: (tab: "party" | "pc") => void;
+  activeTab: "party" | "daycare" | "pc";
+  setActiveTab: (tab: "party" | "daycare" | "pc") => void;
 }
 
 export const DashboardSidebar = ({
@@ -59,15 +59,27 @@ export const DashboardSidebar = ({
         </button>
 
         <button
+          onClick={() => setActiveTab("daycare")}
+          className={[
+            "relative w-full px-4 py-3 text-left font-bold text-xs flex items-center transition-colors",
+            "border-t border-slate-100 dark:border-slate-800",
+            activeTab === "daycare"
+              ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-indigo-600 dark:before:bg-indigo-400"
+              : "text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800",
+          ].join(" ")}>
+          <Database size={16} className="mr-3" /> Daycare
+        </button>
+
+        <button
           onClick={() => setActiveTab("pc")}
           className={[
             "relative w-full px-4 py-3 text-left font-bold text-xs flex items-center transition-colors",
-            "rounded-b-xl", // keeps bottom corners rounded
+            "rounded-b-xl border-t border-slate-100 dark:border-slate-800", // keeps bottom corners rounded
             activeTab === "pc"
               ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-indigo-600 dark:before:bg-indigo-400 before:rounded-bl-xl"
               : "text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800",
           ].join(" ")}>
-          <Database size={16} className="mr-3" /> Daycare
+          <Box size={16} className="mr-3" /> PC Boxes
         </button>
       </div>
 

@@ -41,39 +41,48 @@ export async function GET(
   let { slug } = await ctx.params;
   slug = decodeURIComponent(slug);
 
-  // Handle "id-123-form-1" pattern
+  // 1. Handle "id-123-form-1" pattern
   if (slug.startsWith("id-")) {
     try {
       const parts = slug.split("-");
       // id-479-form-2 -> ["id", "479", "form", "2"]
       const speciesId = parts[1];
       const formIndexStr = parts[3];
+      
       if (!formIndexStr) throw new Error("Invalid form pattern");
       const formIndex = parseInt(formIndexStr, 10);
 
       // Fetch species to find the correct variety
       const speciesRes = await fetch(
         `https://pokeapi.co/api/v2/pokemon-species/${speciesId}`,
-        {
-          next: { revalidate },
-        }
+        { next: { revalidate } }
       );
 
       if (speciesRes.ok) {
         const speciesData = await speciesRes.json();
-        // varieties is usually ordered: default, then forms in order
-        // We trust PokeAPI's order matches the game's form index
         const variety = speciesData.varieties?.[formIndex];
+        
         if (variety?.pokemon?.name) {
           slug = variety.pokemon.name;
+        } else {
+          // FORM FALLBACK: If variety index doesn't exist, fallback to base species ID
+          // This fixes the "Species X" error for unknown forms
+          console.warn(`Form ${formIndex} not found for species ${speciesId}, falling back to base.`);
+          slug = speciesId || slug; 
         }
+      } else {
+        // Species lookup failed? Fallback to ID just in case
+        slug = speciesId || slug;
       }
     } catch (e) {
       console.error("Failed to resolve form slug", e);
-      // Fallback to original slug (which will likely fail 404 but that's fine)
+      // Fallback: If parsing fails, try to extract just the ID part if possible
+      const parts = slug.split("-");
+      if (parts[1]) slug = parts[1]; 
     }
   }
 
+  // 2. Fetch Pokemon Data (using the resolved slug or fallback ID)
   const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${slug}`, {
     next: { revalidate },
   });
@@ -84,14 +93,12 @@ export async function GET(
 
   const json = (await res.json()) as PokeApiPokemon;
 
-  // Fetch species data for gender_rate
-  let genderRate = -1; // Default to genderless
+  // 3. Fetch species data for gender_rate
+  let genderRate = -1; 
   try {
     const speciesRes = await fetch(
       `https://pokeapi.co/api/v2/pokemon-species/${json.id}`,
-      {
-        next: { revalidate },
-      }
+      { next: { revalidate } }
     );
     if (speciesRes.ok) {
       const speciesData = (await speciesRes.json()) as PokeApiSpecies;

@@ -5,33 +5,45 @@ import type { EnrichedPokemon, PokeDumpMon } from "@/types/pokemon";
 import { useMemo } from "react";
 import { usePokeApi } from "./usePokeApi";
 
-/**
- * Enriches an array of PokeDumpMon with species data from PokeAPI
- * Returns an array of EnrichedPokemon that contains everything needed for the UI
- * 
- * This is the ONLY hook you should use in your UI components.
- */
 export function useEnrichedPokemon(
   pokemonList: PokeDumpMon[]
-): EnrichedPokemon[] {
-  // Get unique API slugs we need to fetch
-  const neededSlugs = useMemo(() => {
+): { data: EnrichedPokemon[]; isLoading: boolean } {
+  
+  // 1. Collect IDs
+  const { neededSlugs, neededMoveIds } = useMemo(() => {
     const slugs = new Set<string>();
+    const moveIds = new Set<number>();
+
     for (const p of pokemonList) {
       slugs.add(getPokeApiSlug(p));
+      if (p.moves) {
+        for (const m of p.moves) {
+          if (m.move_id) moveIds.add(m.move_id);
+        }
+      }
     }
-    return [...slugs];
+    return {
+      neededSlugs: [...slugs],
+      neededMoveIds: [...moveIds],
+    };
   }, [pokemonList]);
 
-  // Fetch all species data
-  const { data: apiPokemonBySlug } = usePokeApi("pokemon", neededSlugs);
+  // 2. Fetch Data (Both hooks return an 'isLoading' boolean)
+  const { data: apiPokemonBySlug, isLoading: loadingMons } = usePokeApi("pokemon", neededSlugs);
+  const { data: apiMovesById, isLoading: loadingMoves } = usePokeApi("move", neededMoveIds);
 
-  // Merge the data
-  return useMemo(() => {
+  // 3. Enrich
+  const enriched = useMemo(() => {
     return pokemonList.map((pokemon) => {
       const slug = getPokeApiSlug(pokemon);
       const apiData = apiPokemonBySlug[slug];
-      return enrichPokemon(pokemon, apiData);
+      return enrichPokemon(pokemon, apiData, apiMovesById);
     });
-  }, [pokemonList, apiPokemonBySlug]);
+  }, [pokemonList, apiPokemonBySlug, apiMovesById]);
+
+  // 4. Return Data + Aggregate Loading State
+  return {
+    data: enriched,
+    isLoading: loadingMons || loadingMoves
+  };
 }

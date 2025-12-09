@@ -1,6 +1,6 @@
 // src/types/pokemon.ts
-// Core Pokemon data types from PokeSnooper schema v2
 
+// ... [Keep DumpEnvelope, PcDumpEnvelope] ...
 export type DumpEnvelope = {
   schema_version: number;
   captured_at_ms: number;
@@ -8,8 +8,16 @@ export type DumpEnvelope = {
     packet_class: string;
     container_id: number;
     container_type: string;
+    capacity?: number;
   };
   pokemon: PokeDumpMon[];
+};
+
+export type PcDumpEnvelope = {
+  source: {
+    container_type: "pc_boxes";
+  };
+  boxes: Record<string, DumpEnvelope>;
 };
 
 export type PokeDumpMon = {
@@ -21,6 +29,10 @@ export type PokeDumpMon = {
     nickname: string;
     ot_name: string;
     personality_value: number;
+    // EXTRACTED FLAGS
+    shiny: boolean;
+    is_gift: boolean;
+    is_alpha: boolean;
   };
   state: {
     level: number;
@@ -28,7 +40,8 @@ export type PokeDumpMon = {
     current_hp: number | null;
     xp: number | null;
     happiness: number | null;
-    status: number | null;
+    // Removed 'status' (it was confusingly mapped to flags)
+    // Removed 'shiny' (moved to identity)
   };
   stats: {
     evs: StatBlock;
@@ -51,29 +64,24 @@ export type StatBlock = {
   spe: number;
 };
 
-/**
- * Container type constants from PokeSnooper
- * Used to identify which container type is being dumped
- */
 export const CONTAINER_IDS = {
-  PARTY_IDS: [1, 2], // Party can be container ID 1 or 2
+  PARTY_IDS: [1, 2],
   DAYCARE_ID: 3,
-  PC_BOX_START: 100, // PC boxes start at 100+
+  PC_BOX_START: 100,
 } as const;
 
 export type ContainerType = "party" | "daycare" | "pc_box" | "unknown";
 
 // --- API / Cache Types ---
 
-/**
- * Cached Pokemon data structure (used in usePokemon hook)
- */
 export type CachedPokemon = {
   id: number;
   name: string;
   sprites: {
     front_default?: string | null;
+    front_shiny?: string | null; // <--- ADDED
     animated?: string | null;
+    animated_shiny?: string | null; // <--- ADDED
     other?: unknown;
   };
   stats: Record<string, number>;
@@ -83,7 +91,7 @@ export type CachedPokemon = {
     is_hidden: boolean;
     slot: number;
   }>;
-  gender_rate: number; // -1 = genderless, 0 = always male, 8 = always female, 4 = 50/50, etc.
+  gender_rate: number;
 };
 
 export type CachedMove = {
@@ -105,23 +113,31 @@ export type PokemonAbility = {
   slot: number;
 };
 
-/**
- * Complete Pokemon data ready for UI display
- * Combines live data from snooper with static species data from PokeAPI
- */
+// Helper for the UI to display moves easily
+export type EnrichedMove = CachedMove & {
+  pp_left: number | null;
+};
+
 export type EnrichedPokemon = PokeDumpMon & {
-  // Species metadata from PokeAPI (undefined if not loaded yet)
   species?: {
-    name: string;           // "pikachu"
-    displayName: string;    // "Pikachu" 
-    sprite: string;         // URL to sprite image
-    types: string[];        // ["electric"]
+    name: string;
+    displayName: string;
+    sprite: string; // Context-aware main sprite (Shiny/Normal)
+    sprites: {
+      front_default: string | null;
+      front_shiny: string | null; // <--- ADDED
+      animated: string | null;
+      animated_shiny: string | null; // <--- ADDED
+    };
+    types: string[];
     baseStats: StatBlock;
-    genderRate: number;     // -1 = genderless, 0-8 = ratio
+    genderRate: number;
     abilities: PokemonAbility[];
   };
   
-  // Computed values (only available when species data is loaded)
+  // Pre-fetched move data
+  movesData?: EnrichedMove[];
+  
   computed?: {
     gender: "male" | "female" | "genderless";
     calculatedStats: StatBlock;

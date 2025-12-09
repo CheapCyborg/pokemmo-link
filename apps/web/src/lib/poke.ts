@@ -1,8 +1,7 @@
 // src/lib/poke.ts
-// Utility functions and constants for Pokemon data
+import type { CachedMove, CachedPokemon, EnrichedMove, EnrichedPokemon, PokeDumpMon } from "@/types/pokemon";
 
-import type { CachedPokemon, EnrichedPokemon, PokeDumpMon } from "@/types/pokemon";
-
+// ... [Keep toTitleCase, getPokeApiSlug, NATURE_MULTIPLIERS, calculateStat, calculateGender helpers] ...
 export const toTitleCase = (s: string) =>
   (s || "")
     .replace(/(^|\s|[-_])\w/g, (m) => m.toUpperCase())
@@ -14,8 +13,6 @@ export const getPokeApiSlug = (p: PokeDumpMon) => {
     return `id-${p.identity.species_id}-form-${p.identity.form_id}`;
   return String(p.identity.species_id);
 };
-
-
 
 export const NATURE_MULTIPLIERS: Record<string, Record<string, number>> = {
   Adamant: { atk: 1.1, spa: 0.9 },
@@ -54,7 +51,7 @@ export const calculateStat = (
   statName: string
 ) => {
   if (statName === "hp") {
-    if (base === 1) return 1; // Shedinja
+    if (base === 1) return 1;
     return (
       Math.floor(((2 * base + iv + Math.floor(ev / 4)) * level) / 100) +
       level +
@@ -68,74 +65,41 @@ export const calculateStat = (
   return Math.floor(raw * multiplier);
 };
 
-/**
- * Calculate Pokemon gender from personality value and species gender ratio
- *
- * @param personalityValue - The Pokemon's personality value (from identity.personality_value)
- * @param genderRatio - Species gender ratio from PokeAPI (0-8, or -1 for genderless)
- *   - -1: Genderless
- *   - 0: Always male (87.5% male species use threshold 31)
- *   - 1: 87.5% male (threshold 31)
- *   - 2: 75% male (threshold 63)
- *   - 4: 50% male (threshold 127)
- *   - 6: 25% male (threshold 191)
- *   - 7: 12.5% male (threshold 225)
- *   - 8: Always female (threshold 254)
- * @returns "male" | "female" | "genderless"
- */
 export const calculateGender = (
   personalityValue: number,
   genderRatio: number
 ): "male" | "female" | "genderless" => {
-  // Genderless species
   if (genderRatio === -1) return "genderless";
-  // Always male
   if (genderRatio === 0) return "male";
-  // Always female
   if (genderRatio === 8) return "female";
-
-  // Get last byte of personality value (handle negative values)
-  // Convert to unsigned 32-bit int first, then get last byte
-  const unsignedValue = personalityValue >>> 0; // Convert to unsigned
+  const unsignedValue = personalityValue >>> 0;
   const genderByte = unsignedValue & 0xff;
-
-  // Map gender ratio to threshold
   const thresholds: Record<number, number> = {
-    1: 31, // 87.5% male
-    2: 63, // 75% male
-    4: 127, // 50% male
-    6: 191, // 25% male
-    7: 225, // 12.5% male
+    1: 31, 2: 63, 4: 127, 6: 191, 7: 225,
   };
-
-  const threshold = thresholds[genderRatio] ?? 127; // Default to 50/50
-
-  // Standard logic: < threshold = female, >= threshold = male
+  const threshold = thresholds[genderRatio] ?? 127;
   return genderByte >= threshold ? "male" : "female";
 };
 
-export const getSpriteUrl = (speciesId: number) => {
-  // Use Gen 5 animated sprites for Gen 1-5 (IDs 1-649)
+export const getSpriteUrl = (speciesId: number, isShiny = false) => {
+  const shinyPath = isShiny ? "shiny/" : "";
   if (speciesId <= 649) {
-    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${speciesId}.gif`;
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${shinyPath}${speciesId}.gif`;
   }
-  // Fallback for newer gens
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${speciesId}.png`;
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${shinyPath}${speciesId}.png`;
 };
 
-/**
- * Enrich a PokeDumpMon with species data from PokeAPI
- * This creates a unified object that has everything the UI needs
- */
+// --- UPDATED ENRICH FUNCTION ---
 export const enrichPokemon = (
   pokemon: PokeDumpMon,
-  apiData?: CachedPokemon
+  apiData?: CachedPokemon,
+  moveCache?: Record<string | number, CachedMove>
 ): EnrichedPokemon => {
   if (!apiData) {
-    // Return just the base pokemon if we don't have API data yet
     return pokemon as EnrichedPokemon;
   }
 
+  // ... [Keep stats calc logic] ...
   const baseStats = {
     hp: apiData.stats.hp || 0,
     atk: apiData.stats.attack || 0,
@@ -146,54 +110,12 @@ export const enrichPokemon = (
   };
 
   const calculatedStats = {
-    hp: calculateStat(
-      baseStats.hp,
-      pokemon.stats.ivs.hp,
-      pokemon.stats.evs.hp,
-      pokemon.state.level,
-      pokemon.state.nature,
-      "hp"
-    ),
-    atk: calculateStat(
-      baseStats.atk,
-      pokemon.stats.ivs.atk,
-      pokemon.stats.evs.atk,
-      pokemon.state.level,
-      pokemon.state.nature,
-      "atk"
-    ),
-    def: calculateStat(
-      baseStats.def,
-      pokemon.stats.ivs.def,
-      pokemon.stats.evs.def,
-      pokemon.state.level,
-      pokemon.state.nature,
-      "def"
-    ),
-    spa: calculateStat(
-      baseStats.spa,
-      pokemon.stats.ivs.spa,
-      pokemon.stats.evs.spa,
-      pokemon.state.level,
-      pokemon.state.nature,
-      "spa"
-    ),
-    spd: calculateStat(
-      baseStats.spd,
-      pokemon.stats.ivs.spd,
-      pokemon.stats.evs.spd,
-      pokemon.state.level,
-      pokemon.state.nature,
-      "spd"
-    ),
-    spe: calculateStat(
-      baseStats.spe,
-      pokemon.stats.ivs.spe,
-      pokemon.stats.evs.spe,
-      pokemon.state.level,
-      pokemon.state.nature,
-      "spe"
-    ),
+    hp: calculateStat(baseStats.hp, pokemon.stats.ivs.hp, pokemon.stats.evs.hp, pokemon.state.level, pokemon.state.nature, "hp"),
+    atk: calculateStat(baseStats.atk, pokemon.stats.ivs.atk, pokemon.stats.evs.atk, pokemon.state.level, pokemon.state.nature, "atk"),
+    def: calculateStat(baseStats.def, pokemon.stats.ivs.def, pokemon.stats.evs.def, pokemon.state.level, pokemon.state.nature, "def"),
+    spa: calculateStat(baseStats.spa, pokemon.stats.ivs.spa, pokemon.stats.evs.spa, pokemon.state.level, pokemon.state.nature, "spa"),
+    spd: calculateStat(baseStats.spd, pokemon.stats.ivs.spd, pokemon.stats.evs.spd, pokemon.state.level, pokemon.state.nature, "spd"),
+    spe: calculateStat(baseStats.spe, pokemon.stats.ivs.spe, pokemon.stats.evs.spe, pokemon.state.level, pokemon.state.nature, "spe"),
   };
 
   const gender = calculateGender(
@@ -201,15 +123,49 @@ export const enrichPokemon = (
     apiData.gender_rate
   );
 
+  // SPRITE SELECTION LOGIC
+  const isShiny = pokemon.identity.shiny;
+
+  // Calculate specific URLs for the current state (Shiny or Normal)
+  const currentStaticUrl = isShiny 
+    ? (apiData.sprites.front_shiny || getSpriteUrl(pokemon.identity.species_id, true))
+    : (apiData.sprites.front_default || getSpriteUrl(pokemon.identity.species_id, false));
+
+  const currentAnimatedUrl = isShiny
+    ? apiData.sprites.animated_shiny 
+    : apiData.sprites.animated;
+
+  // Calculate fallback URLs for the object (so we have everything)
+  const baseStaticUrl = apiData.sprites.front_default || getSpriteUrl(pokemon.identity.species_id, false);
+  const shinyStaticUrl = apiData.sprites.front_shiny || getSpriteUrl(pokemon.identity.species_id, true);
+
+  // RESOLVE MOVES
+  const movesData: EnrichedMove[] = [];
+  if (moveCache && pokemon.moves) {
+    for (const m of pokemon.moves) {
+      const cached = moveCache[m.move_id];
+      if (cached) {
+        movesData.push({ ...cached, pp_left: m.pp });
+      }
+    }
+  }
+
   return {
     ...pokemon,
+    movesData,
     species: {
       name: apiData.name,
       displayName: toTitleCase(apiData.name),
-      sprite:
-        apiData.sprites.animated ||
-        apiData.sprites.front_default ||
-        getSpriteUrl(pokemon.identity.species_id),
+      // SMART SPRITE: The main 'sprite' field used by UI
+      sprite: currentAnimatedUrl || currentStaticUrl,
+      
+      // FULL SPRITE OBJECT (Matches Type Definition)
+      sprites: {
+        front_default: baseStaticUrl,
+        front_shiny: shinyStaticUrl,
+        animated: apiData.sprites.animated || null,
+        animated_shiny: apiData.sprites.animated_shiny || null,
+      },
       types: apiData.types || [],
       baseStats,
       genderRate: apiData.gender_rate,

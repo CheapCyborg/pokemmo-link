@@ -9,10 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { usePokeApi } from "@/hooks/usePokeApi";
-import { getSpriteUrl, toTitleCase } from "@/lib/poke";
+import { imageCache } from "@/lib/imageCache";
+import { toTitleCase } from "@/lib/poke";
 import type { EnrichedPokemon } from "@/types/pokemon";
 import { Heart, Mars, Venus, Volume2 } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 
 interface PokemonDetailsModalProps {
   open: boolean;
@@ -20,25 +22,51 @@ interface PokemonDetailsModalProps {
   pokemon: EnrichedPokemon | null | undefined;
 }
 
-
 export function PokemonDetailsModal({
   open,
   onOpenChange,
   pokemon,
 }: PokemonDetailsModalProps) {
-  const { data: apiMoveById } = usePokeApi(
-    "move",
-    open && pokemon?.moves ? pokemon.moves.map((m) => m.move_id) : []
-  );
+  // Note: We do NOT fetch moves here anymore. They are pre-loaded in pokemon.movesData!
   
   const types = pokemon?.species?.types || [];
 
+  // --- OPTIMIZED IMAGE LOGIC ---
+  const animatedUrl = pokemon?.species?.sprites?.animated;
+  const staticUrl = 
+    pokemon?.species?.sprites?.front_default ||
+    (pokemon ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.identity.species_id}.png` : "");
+
+  // Determine initial image based on global cache
+  const getInitialImage = () => {
+    if (animatedUrl && !imageCache.isBroken(animatedUrl)) {
+      return animatedUrl;
+    }
+    return staticUrl;
+  };
+
+  const [modalImgSrc, setModalImgSrc] = useState<string>(getInitialImage());
+
+  // Reset image when the pokemon changes (or opens)
+  useEffect(() => {
+    setModalImgSrc(getInitialImage());
+  }, [pokemon, animatedUrl, staticUrl]);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const playCry = () => {
     if (!pokemon) return;
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
     const audio = new Audio(
       `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemon.identity.species_id}.ogg`
     );
     audio.volume = 0.5;
+    audioRef.current = audio;
     audio.play().catch((e) => console.error("Failed to play cry", e));
   };
 
@@ -49,19 +77,24 @@ export function PokemonDetailsModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={
-                    pokemon.species?.sprite ||
-                    getSpriteUrl(pokemon.identity.species_id)
-                  }
+                <Image
+                  src={modalImgSrc}
                   alt={
                     pokemon.species?.displayName ||
                     `Species ${pokemon.identity.species_id}`
                   }
+                  width={72}
+                  height={72}
+                  sizes="96px"
+                  unoptimized
                   className="w-16 h-16 object-contain [image-rendering:pixelated] rounded-md"
-                  onError={(e) => {
-                    e.currentTarget.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.identity.species_id}.png`;
+                  onError={() => {
+                    if (modalImgSrc === animatedUrl && animatedUrl) {
+                      imageCache.reportError(animatedUrl);
+                      setModalImgSrc(staticUrl);
+                    } else if (modalImgSrc !== staticUrl) {
+                      setModalImgSrc(staticUrl);
+                    }
                   }}
                 />
                 <div className="min-w-0 grow">
@@ -74,7 +107,8 @@ export function PokemonDetailsModal({
                     <button
                       onClick={playCry}
                       className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-                      title="Play Cry">
+                      title="Play Cry"
+                    >
                       <Volume2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -87,17 +121,18 @@ export function PokemonDetailsModal({
                       Lv.{pokemon.state.level}
                     </span>
                     {pokemon.state.current_hp !== null &&
-                      pokemon.computed?.calculatedStats.hp ? <span className="font-['Press_Start_2P'] text-[8px] leading-none text-slate-700 dark:text-slate-300">
-                          HP {pokemon.state.current_hp}/
-                          {pokemon.computed.calculatedStats.hp}
-                        </span> : null}
+                    pokemon.computed?.calculatedStats.hp ? (
+                      <span className="font-['Press_Start_2P'] text-[8px] leading-none text-slate-700 dark:text-slate-300">
+                        HP {pokemon.state.current_hp}/
+                        {pokemon.computed.calculatedStats.hp}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
               </DialogTitle>
             </DialogHeader>
 
             <div className="mt-3 space-y-3 text-sm">
-              {/* Info Bar: Types, Nature, Gender, Happiness */}
               <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1.5">
@@ -162,64 +197,67 @@ export function PokemonDetailsModal({
                 </div>
               </div>
 
+              {/* --- RESTORED MOVES UI --- */}
               <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3">
                 <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
                   Moves
                 </div>
 
-                {pokemon.moves?.length ? (
+                {pokemon.movesData && pokemon.movesData.length > 0 ? (
                   <div className="space-y-2">
-                    {pokemon.moves.map((m) => {
-                      const id = m.move_id;
-                      const move = apiMoveById[id];
-                      return (
-                        <div
-                          key={id}
-                          className="rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-2 text-xs">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="font-bold text-slate-700 dark:text-slate-200">
-                              {move?.name
-                                ? toTitleCase(move.name)
-                                : `Move ${id}`}
-                            </span>
-                            <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
-                              #{id}
-                            </span>
-                          </div>
-
-                          {move ? (
-                            <>
-                              <div className="flex gap-2 mb-1.5 items-center">
-                                {!!move.type && (
-                                  <TypeBadge type={move.type} size="sm" className="rounded" />
-                                )}
-                                {!!move.damage_class && (
-                                  <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-bold uppercase">
-                                    {move.damage_class}
-                                  </span>
-                                )}
-                                <span className="ml-auto text-[10px] font-mono text-slate-500">
-                                  PWR: {move.power ?? "-"} • ACC:{" "}
-                                  {move.accuracy ?? "-"} • PP:{" "}
-                                  {m.pp ?? move.pp ?? "-"}
-                                </span>
-                              </div>
-                              {!!move.description && (
-                                <p className="text-slate-500 italic leading-tight">
-                                  {move.description}
-                                </p>
-                              )}
-                            </>
-                          ) : (
-                            <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
-                          )}
+                    {pokemon.movesData.map((move) => (
+                      <div
+                        key={move.id}
+                        className="rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-2 text-xs"
+                      >
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-bold text-slate-700 dark:text-slate-200">
+                            {toTitleCase(move.name)}
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                            #{move.id}
+                          </span>
                         </div>
-                      );
-                    })}
+
+                        <div className="flex gap-2 mb-1.5 items-center">
+                          {/* Type Badge */}
+                          {!!move.type && (
+                            <TypeBadge
+                              type={move.type}
+                              size="sm"
+                              className="rounded"
+                            />
+                          )}
+                          
+                          {/* Damage Class Badge (Physical/Special) */}
+                          {!!move.damage_class && (
+                            <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-bold uppercase">
+                              {move.damage_class}
+                            </span>
+                          )}
+                          
+                          {/* Stats (Power, Accuracy, PP) */}
+                          <span className="ml-auto text-[10px] font-mono text-slate-500">
+                            PWR: {move.power ?? "-"} • ACC:{" "}
+                            {move.accuracy ?? "-"} • PP:{" "}
+                            {move.pp_left ?? move.pp ?? "-"}
+                          </span>
+                        </div>
+                        
+                        {/* Description */}
+                        {!!move.description && (
+                          <p className="text-slate-500 italic leading-tight">
+                            {move.description}
+                          </p>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="text-xs text-slate-500 mt-1">
-                    No moves in dump yet.
+                    {pokemon.moves && pokemon.moves.length > 0
+                      ? "Loading moves..."
+                      : "No moves learned."}
                   </div>
                 )}
               </div>

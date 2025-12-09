@@ -19,16 +19,32 @@ object PokemonDumpSchema {
     // ─────────────────────────────────────────────────────────────────────────────
 
     data class DumpEnvelope(
-            @SerializedName("schema_version") val schemaVersion: Int = 2,
-            @SerializedName("captured_at_ms") val capturedAtMs: Long = System.currentTimeMillis(),
-            @SerializedName("source") val source: DumpSource,
-            @SerializedName("pokemon") val pokemon: List<PokemonRecord>
+        @SerializedName("schema_version") val schemaVersion: Int = 2,
+        @SerializedName("captured_at_ms") val capturedAtMs: Long = System.currentTimeMillis(),
+        @SerializedName("source") val source: DumpSource,
+        @SerializedName("pokemon") val pokemon: List<PokemonRecord>
+    )
+
+    data class PcBoxesEnvelope(
+        @SerializedName("schema_version") val schemaVersion: Int = 2,
+        @SerializedName("captured_at_ms") val capturedAtMs: Long = System.currentTimeMillis(),
+        @SerializedName("source") val source: PcBoxesSource,
+        @SerializedName("boxes") val boxes: Map<String, DumpEnvelope>
     )
 
     data class DumpSource(
             @SerializedName("packet_class") val packetClass: String,
             @SerializedName("container_id") val containerId: Int,
-            @SerializedName("container_type") val containerType: String
+            @SerializedName("container_type") val containerType: String,
+            @SerializedName("capacity") val capacity: Int = 0
+    )
+
+    data class PcBoxesSource(
+            @SerializedName("packet_class") val packetClass: String,
+            @SerializedName("container_type") val containerType: String,
+            @SerializedName("hb_raw") val hbRaw: Int,
+            @SerializedName("capacity") val capacity: Int,
+            @SerializedName("slot_strategy") val slotStrategy: String = "Ch1_global"
     )
 
     data class PokemonRecord(
@@ -47,7 +63,10 @@ object PokemonDumpSchema {
             @SerializedName("form_id") val formId: Int? = null,
             @SerializedName("nickname") val nickname: String,
             @SerializedName("ot_name") val otName: String,
-            @SerializedName("personality_value") val personalityValue: Int
+            @SerializedName("personality_value") val personalityValue: Int,
+            @SerializedName("is_shiny") val isShiny: Boolean? = null,
+            @SerializedName("is_gift") val isGift: Boolean? = null,
+            @SerializedName("is_alpha") val isAlpha: Boolean? = null
     )
 
     data class State(
@@ -56,7 +75,6 @@ object PokemonDumpSchema {
             @SerializedName("current_hp") val currentHp: Int? = null,
             @SerializedName("xp") val xp: Int? = null,
             @SerializedName("happiness") val happiness: Int? = null,
-            @SerializedName("status") val status: Int? = null
     )
 
     data class Stats(
@@ -147,6 +165,17 @@ object PokemonDumpSchema {
         return template
     }
 
+        private fun asBooleanFlag(value: Any?): Boolean? =
+                        when (value) {
+                                null -> null
+                                is Boolean -> value
+                                is Number -> value.toInt() != 0
+                                is String ->
+                                                value.toBooleanStrictOrNull()
+                                                                ?: value.toIntOrNull()?.let { it != 0 }
+                                else -> null
+                        }
+
     // ─────────────────────────────────────────────────────────────────────────────
     // 4) Adapter: Convert YOUR current extractPokemonData() map -> stable schema
     // ─────────────────────────────────────────────────────────────────────────────
@@ -156,6 +185,7 @@ object PokemonDumpSchema {
      * - name, species_id, level, nature, ivs (string), evs (string), original_trainer, uuid
      * Optional:
      * - moves: int list/array, form, pokeapiName, form_source
+     * - flags: is_shiny, is_gift, is_alpha
      */
     fun fromExtractedMap(
             extracted: Map<String, Any?>,
@@ -187,6 +217,10 @@ object PokemonDumpSchema {
         val abilityId = (extracted["ability_id"] as? Number)?.toInt()
         val abilitySlot = (extracted["ability_slot"] as? Number)?.toInt()
 
+        val isShiny = asBooleanFlag(extracted["is_shiny"])
+        val isGift = asBooleanFlag(extracted["is_gift"])
+        val isAlpha = asBooleanFlag(extracted["is_alpha"])
+
         return PokemonRecord(
                 slot = slotIndex,
                 identity =
@@ -196,7 +230,10 @@ object PokemonDumpSchema {
                                 formId = formId,
                                 nickname = nickname,
                                 otName = otName,
-                                personalityValue = personalityValue
+                                personalityValue = personalityValue,
+                                isShiny = isShiny,
+                                isGift = isGift,
+                                isAlpha = isAlpha,
                         ),
                 state = State(
                         level = level,
@@ -204,7 +241,6 @@ object PokemonDumpSchema {
                         currentHp = (extracted["current_hp"] as? Number)?.toInt(),
                         xp = (extracted["xp"] as? Number)?.toInt(),
                         happiness = (extracted["happiness"] as? Number)?.toInt(),
-                        status = (extracted["status"] as? Number)?.toInt()
                 ),
                 stats =
                         Stats(
@@ -221,6 +257,7 @@ object PokemonDumpSchema {
             packetClass: String,
             containerId: Int,
             containerType: String,
+            capacity: Int = 0,
             records: List<PokemonRecord>
     ): DumpEnvelope =
             DumpEnvelope(
@@ -228,12 +265,34 @@ object PokemonDumpSchema {
                             DumpSource(
                                     packetClass = packetClass,
                                     containerId = containerId,
-                                    containerType = containerType
+                                    containerType = containerType,
+                                    capacity = capacity
                             ),
                     pokemon = records
             )
 
     fun writeEnvelope(file: File, envelope: DumpEnvelope) {
+        file.writeText(gson.toJson(envelope))
+    }
+
+    fun pcBoxesEnvelope(
+            packetClass: String,
+            hbRaw: Int,
+            capacity: Int,
+            boxes: Map<String, DumpEnvelope>
+    ): PcBoxesEnvelope =
+            PcBoxesEnvelope(
+                    source =
+                            PcBoxesSource(
+                                    packetClass = packetClass,
+                                    containerType = "pc_boxes",
+                                    hbRaw = hbRaw,
+                                    capacity = capacity
+                            ),
+                    boxes = boxes
+            )
+
+    fun writePcBoxesEnvelope(file: File, envelope: PcBoxesEnvelope) {
         file.writeText(gson.toJson(envelope))
     }
 

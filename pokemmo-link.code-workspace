@@ -1,14 +1,6 @@
 {
   "folders": [
     {
-      "name": "Web (Next.js)",
-      "path": "apps/web"
-    },
-    {
-      "name": "Agent (Java)",
-      "path": "apps/agent"
-    },
-    {
       "name": "Root",
       "path": ".",
       "settings": {
