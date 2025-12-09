@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:web\" \"npm run dev:agent\"",
     "dev:web": "npm run dev --prefix apps/web",
-    "dev:agent": "cd apps/agent && ./gradlew runSnooper"
+    "dev:agent": "cd apps/agent && gradlew.bat runSnooper"
   },
   "devDependencies": {
     "concurrently": "^8.0.0"
