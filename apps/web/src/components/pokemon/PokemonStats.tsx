@@ -23,14 +23,18 @@ export const PokemonStats = ({
   const nature = pokemon.state.nature;
   const stats = computed.calculatedStats;
 
-  const maxStat = Math.max(...Object.values(stats), 1);
+  // Use a fixed maximum (e.g., 400) to allow comparison between Pokemon,
+  // but expand if this Pokemon has a stat exceeding that (e.g. Blissey HP)
+  const maxStat = Math.max(...Object.values(stats), 400);
   const natureMods = NATURE_MULTIPLIERS[nature] || {};
 
   return (
     <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3">
-      <div className="grid grid-cols-2 gap-x-4 text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-3">
-        <span>Stats</span>
-        <span className="text-right">IVs / EVs</span>
+      <div className="flex items-center text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mb-2">
+        <div className="w-20">Stat</div>
+        <div className="grow"></div>
+        <div className="w-8 text-right">IV</div>
+        <div className="w-10 text-right">EV</div>
       </div>
       <div className="space-y-2">
         <StatRow

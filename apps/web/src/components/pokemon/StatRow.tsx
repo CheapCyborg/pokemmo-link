@@ -39,21 +39,30 @@ export const StatRow = ({
         {stat}
       </span>
 
-      <div className="grow h-2 bg-gray-100 dark:bg-slate-800 rounded-full mr-3 relative overflow-hidden">
+      <div className="grow h-2 bg-slate-100 dark:bg-slate-800 rounded-full mr-3 relative overflow-hidden">
         <div
           className={`h-full rounded-full ${color}`}
           style={{ width: `${(stat / maxStat) * 100}%` }}
         />
       </div>
 
-      <div className="flex space-x-1 text-[10px] font-mono w-20 justify-end">
+      <div className="w-8 text-right font-mono text-[10px]">
         <span
-          className={`${iv === 31 ? "text-green-600 font-bold" : "text-gray-400"}`}>
+          className={`${
+            iv === 31
+              ? "text-green-600 dark:text-green-400 font-bold"
+              : "text-slate-400 dark:text-slate-500"
+          }`}>
           {iv}
         </span>
-        <span className="text-gray-300">/</span>
+      </div>
+      <div className="w-10 text-right font-mono text-[10px]">
         <span
-          className={`${ev > 0 ? "text-yellow-600 font-bold" : "text-gray-400"}`}>
+          className={`${
+            ev > 0
+              ? "text-amber-600 dark:text-amber-400 font-bold"
+              : "text-slate-300 dark:text-slate-700"
+          }`}>
           {ev}
         </span>
       </div>

@@ -1,0 +1,754 @@
+--- DEBUG: Party Slot 0 (Species 286) ---
+Gg0 (Is) = 296774049
+  >>> Expanding Gg0:
+    px0 (long) = 296774049
+lL1 (CoM4) = f.CoM4@14091e24
+  >>> Expanding lL1:
+    RY (byte) = 0
+    Dz1 (int) = 0
+Em1 (Is) = 7374879
+  >>> Expanding Em1:
+    px0 (long) = 7374879
+Dq1 (Ol0) = f.Ol0@408980aa
+  >>> Expanding Dq1:
+    c1 (byte) = 1
+    qN1 (int) = 6
+    TD0 (boolean) = true
+    tE1 (boolean) = false
+    qS (boolean) = true
+    BM1 (boolean) = false
+    hb (int) = 1
+Ch1 (short) = 1
+QW0 (short) = 286
+rC (int) = -1228534018
+RX0 (Is) = 7374879
+  >>> Expanding RX0:
+    px0 (long) = 7374879
+kr0 (String) = CheapCyborg
+Uy0 (String) = 
+mp0 (byte) = 0
+JR (byte) = 0
+pt0 (byte) = 68
+eA0 (short) = 163
+CQ0 (short) = 5272
+ZE (short) = -1
+Sp0 (int) = 435751
+tp1 (byte) = 0
+Vt1 (short) = 255
+y5 (short[]) = [S@34c2e03d
+  >>> Expanding y5:
+  >>> Expanding Array y5 (len=4):
+    [0] = 147
+    [1] = 331
+    [2] = 183
+    [3] = 164
+vr0 (byte[]) = [B@6bf70600
+  >>> Expanding vr0:
+  >>> Expanding Array vr0 (len=4):
+    [0] = 15
+    [1] = 30
+    [2] = 30
+    [3] = 10
+iM0 (short[]) = [S@3ca5da54
+  >>> Expanding iM0:
+  >>> Expanding Array iM0 (len=6):
+    [0] = 12
+    [1] = 252
+    [2] = 0
+    [3] = 246
+    [4] = 0
+    [5] = 0
+AM0 (byte) = 0
+pk0 (byte) = 0
+JF0 (byte) = 0
+sQ1 (byte) = 0
+s61 (byte) = 0
+Ww (byte) = 25
+Com1 (byte) = -1
+t8 (byte) = 2
+Hv (int) = -1
+lR1 (byte) = 3
+Kv (byte) = 0
+Tm1 (int) = 1607446498
+bG0 (byte) = 1
+U30 (long) = 0
+sW (short) = 0
+w11 (int) = 1650411959
+K50 (short) = 0
+WD1 (short[]) = [S@45f70f68
+  >>> Expanding WD1:
+  >>> Expanding Array WD1 (len=4):
+    [0] = 0
+    [1] = 235
+    [2] = 363
+    [3] = 76
+WA1 (Aw0) = null
+zW1 (Zq0) = None
+  >>> Expanding zW1:
+    Ee1 (byte) = -1
+    vl (kq) = f.kq@16e3d6d0
+      >>> Expanding vl:
+    ze (int) = 3
+Wy0 (Zq0[]) = [Lf.Zq0;@406d922
+  >>> Expanding Wy0:
+  >>> Expanding Array Wy0 (len=0):
+FB1 (Dw1) = Adamant
+  >>> Expanding FB1:
+    XS1 (byte) = 3
+    uK (Lr) = Attack
+      >>> Expanding uK:
+        YF1 (byte) = 1
+        HC (byte) = 1
+        Gs1 (String) = ATTACK
+        eo0 (int) = 0
+        G6 (int) = 5
+        p51 (boolean) = false
+    uK = ERROR: Unable to make field private final java.lang.String java.lang.Enum.name accessible: module java.base does not "opens java.lang" to unnamed module @59690aa4
+    qJ (Lr) = Sp. Attack
+      >>> Expanding qJ:
+        YF1 (byte) = 4
+        HC (byte) = 3
+        Gs1 (String) = SP. ATTACK
+        eo0 (int) = 0
+        G6 (int) = 5
+        p51 (boolean) = false
+    qJ = ERROR: Unable to make field private final java.lang.String java.lang.Enum.name accessible: module java.base does not "opens java.lang" to unnamed module @59690aa4
+    aH0 (DK0) = f.DK0@2bf0bb93
+      >>> Expanding aH0:
+        DX0 (byte) = 0
+    rS (DK0) = f.DK0@23adbd6b
+      >>> Expanding rS:
+        DX0 (byte) = 1
+zs0 (ZD) = f.ZD@11d0bff5
+  >>> Expanding zs0:
+    Ik1 (byte) = 0
+    ko1 (boolean) = false
+kZ (Is) = 0
+  >>> Expanding kZ:
+    px0 (long) = 0
+
+--- DEBUG: Party Slot 1 (Species 242) ---
+Gg0 (Is) = 81304747
+  >>> Expanding Gg0:
+    px0 (long) = 81304747
+lL1 (CoM4) = f.CoM4@14091e24
+  >>> Expanding lL1:
+    RY (byte) = 0
+    Dz1 (int) = 0
+Em1 (Is) = 7374879
+  >>> Expanding Em1:
+    px0 (long) = 7374879
+Dq1 (Ol0) = f.Ol0@408980aa
+  >>> Expanding Dq1:
+    c1 (byte) = 1
+    qN1 (int) = 6
+    TD0 (boolean) = true
+    tE1 (boolean) = false
+    qS (boolean) = true
+    BM1 (boolean) = false
+    hb (int) = 1
+Ch1 (short) = 3
+QW0 (short) = 242
+rC (int) = 1361646770
+RX0 (Is) = 4859216
+  >>> Expanding RX0:
+    px0 (long) = 4859216
+kr0 (String) = MedicalJed
+Uy0 (String) = Blicky
+mp0 (byte) = 1
+JR (byte) = 0
+pt0 (byte) = 66
+eA0 (short) = 424
+CQ0 (short) = 0
+ZE (short) = -1
+Sp0 (int) = 240428
+tp1 (byte) = -64
+Vt1 (short) = 255
+y5 (short[]) = [S@4b3eaf39
+  >>> Expanding y5:
+  >>> Expanding Array y5 (len=4):
+    [0] = 85
+    [1] = 347
+    [2] = 58
+    [3] = 135
+vr0 (byte[]) = [B@d6879bf
+  >>> Expanding vr0:
+  >>> Expanding Array vr0 (len=4):
+    [0] = 15
+    [1] = 20
+    [2] = 10
+    [3] = 8
+iM0 (short[]) = [S@154208f2
+  >>> Expanding iM0:
+  >>> Expanding Array iM0 (len=6):
+    [0] = 15
+    [1] = 0
+    [2] = 0
+    [3] = 0
+    [4] = 243
+    [5] = 252
+AM0 (byte) = 0
+pk0 (byte) = 0
+JF0 (byte) = 0
+sQ1 (byte) = 0
+s61 (byte) = 0
+Ww (byte) = -120
+Com1 (byte) = 26
+t8 (byte) = 0
+Hv (int) = -1
+lR1 (byte) = 4
+Kv (byte) = 0
+Tm1 (int) = -1345646353
+bG0 (byte) = 1
+U30 (long) = 0
+sW (short) = 0
+w11 (int) = 1651859193
+K50 (short) = 0
+WD1 (short[]) = [S@318a81a0
+  >>> Expanding WD1:
+  >>> Expanding Array WD1 (len=4):
+    [0] = 0
+    [1] = 0
+    [2] = 0
+    [3] = 0
+WA1 (Aw0) = null
+zW1 (Zq0) = None
+  >>> Expanding zW1:
+    Ee1 (byte) = -1
+    vl (kq) = f.kq@16e3d6d0
+      >>> Expanding vl:
+    ze (int) = 3
+Wy0 (Zq0[]) = [Lf.Zq0;@f73a7cf
+  >>> Expanding Wy0:
+  >>> Expanding Array Wy0 (len=0):
+FB1 (Dw1) = Calm
+  >>> Expanding FB1:
+    XS1 (byte) = 20
+    uK (Lr) = Sp. Defense
+      >>> Expanding uK:
+        YF1 (byte) = 5
+        HC (byte) = 4
+        Gs1 (String) = SP. DEFENSE
+        eo0 (int) = 0
+        G6 (int) = 5
+        p51 (boolean) = false
+    uK = ERROR: Unable to make field private final java.lang.String java.lang.Enum.name accessible: module java.base does not "opens java.lang" to unnamed module @59690aa4
+    qJ (Lr) = Attack
+      >>> Expanding qJ:
+        YF1 (byte) = 1
+        HC (byte) = 1
+        Gs1 (String) = ATTACK
+        eo0 (int) = 0
+        G6 (int) = 5
+        p51 (boolean) = false
+    qJ = ERROR: Unable to make field private final java.lang.String java.lang.Enum.name accessible: module java.base does not "opens java.lang" to unnamed module @59690aa4
+    aH0 (DK0) = f.DK0@4198921f
+      >>> Expanding aH0:
+        DX0 (byte) = 3
+    rS (DK0) = f.DK0@2bf0bb93
+      >>> Expanding rS:
+        DX0 (byte) = 0
+zs0 (ZD) = f.ZD@11d0bff5
+  >>> Expanding zs0:
+    Ik1 (byte) = 0
+    ko1 (boolean) = false
+kZ (Is) = 0
+  >>> Expanding kZ:
+    px0 (long) = 0
+
+--- DEBUG: Party Slot 2 (Species 94) ---
+Gg0 (Is) = 305750573
+  >>> Expanding Gg0:
+    px0 (long) = 305750573
+lL1 (CoM4) = f.CoM4@14091e24
+  >>> Expanding lL1:
+    RY (byte) = 0
+    Dz1 (int) = 0
+Em1 (Is) = 7374879
+  >>> Expanding Em1:
+    px0 (long) = 7374879
+Dq1 (Ol0) = f.Ol0@408980aa
+  >>> Expanding Dq1:
+    c1 (byte) = 1
+    qN1 (int) = 6
+    TD0 (boolean) = true
+    tE1 (boolean) = false
+    qS (boolean) = true
+    BM1 (boolean) = false
+    hb (int) = 1
+Ch1 (short) = 4
+QW0 (short) = 94
+rC (int) = -373211806
+RX0 (Is) = 7374879
+  >>> Expanding RX0:
+    px0 (long) = 7374879
+kr0 (String) = CheapCyborg
+Uy0 (String) = 
+mp0 (byte) = 3
+JR (byte) = 0
+pt0 (byte) = 76
+eA0 (short) = 181
+CQ0 (short) = 0
+ZE (short) = -1
+Sp0 (int) = 453815
+tp1 (byte) = 0
+Vt1 (short) = 255
+y5 (short[]) = [S@44181746
+  >>> Expanding y5:
+  >>> Expanding Array y5 (len=4):
+    [0] = 389
+    [1] = 194
+    [2] = 247
+    [3] = 411
+vr0 (byte[]) = [B@21fa19e4
+  >>> Expanding vr0:
+  >>> Expanding Array vr0 (len=4):
+    [0] = 5
+    [1] = 5
+    [2] = 15
+    [3] = 5
+iM0 (short[]) = [S@33a58fcb
+  >>> Expanding iM0:
+  >>> Expanding Array iM0 (len=6):
+    [0] = 3
+    [1] = 3
+    [2] = 0
+    [3] = 252
+    [4] = 252
+    [5] = 0
+AM0 (byte) = 0
+pk0 (byte) = 0
+JF0 (byte) = 0
+sQ1 (byte) = 0
+s61 (byte) = 0
+Ww (byte) = 70
+Com1 (byte) = 16
+t8 (byte) = 3
+Hv (int) = -1
+lR1 (byte) = 3
+Kv (byte) = 0
+Tm1 (int) = -1850285851
+bG0 (byte) = 0
+U30 (long) = 0
+sW (short) = 0
+w11 (int) = 1651422269
+K50 (short) = 0
+WD1 (short[]) = [S@36a8ebca
+  >>> Expanding WD1:
+  >>> Expanding Array WD1 (len=4):
+    [0] = 0
+    [1] = 0
+    [2] = 0
+    [3] = 0
+WA1 (Aw0) = null
+zW1 (Zq0) = None
+  >>> Expanding zW1:
+    Ee1 (byte) = -1
+    vl (kq) = f.kq@16e3d6d0
+      >>> Expanding vl:
+    ze (int) = 3
+Wy0 (Zq0[]) = [Lf.Zq0;@328e687e
+  >>> Expanding Wy0:
+  >>> Expanding Array Wy0 (len=0):
+FB1 (Dw1) = Modest
+  >>> Expanding FB1:
+    XS1 (byte) = 15
+    uK (Lr) = Sp. Attack
+      >>> Expanding uK:
+        YF1 (byte) = 4
+        HC (byte) = 3
+        Gs1 (String) = SP. ATTACK
+        eo0 (int) = 0
+        G6 (int) = 5
+        p51 (boolean) = false
+    uK = ERROR: Unable to make field private final java.lang.String java.lang.Enum.name accessible: module java.base does not "opens java.lang" to unnamed module @59690aa4
+    qJ (Lr) = Attack
+      >>> Expanding qJ:
+        YF1 (byte) = 1
+        HC (byte) = 1
+        Gs1 (String) = ATTACK
+        eo0 (int) = 0
+        G6 (int) = 5
+        p51 (boolean) = false
+    qJ = ERROR: Unable to make field private final java.lang.String java.lang.Enum.name accessible: module java.base does not "opens java.lang" to unnamed module @59690aa4
+    aH0 (DK0) = f.DK0@23adbd6b
+      >>> Expanding aH0:
+        DX0 (byte) = 1
+    rS (DK0) = f.DK0@2bf0bb93
+      >>> Expanding rS:
+        DX0 (byte) = 0
+zs0 (ZD) = f.ZD@11d0bff5
+  >>> Expanding zs0:
+    Ik1 (byte) = 0
+    ko1 (boolean) = false
+kZ (Is) = 0
+  >>> Expanding kZ:
+    px0 (long) = 0
+
+--- DEBUG: Party Slot 3 (Species 479) ---
+Gg0 (Is) = 298843701
+  >>> Expanding Gg0:
+    px0 (long) = 298843701
+lL1 (CoM4) = f.CoM4@14091e24
+  >>> Expanding lL1:
+    RY (byte) = 0
+    Dz1 (int) = 0
+Em1 (Is) = 7374879
+  >>> Expanding Em1:
+    px0 (long) = 7374879
+Dq1 (Ol0) = f.Ol0@408980aa
+  >>> Expanding Dq1:
+    c1 (byte) = 1
+    qN1 (int) = 6
+    TD0 (boolean) = true
+    tE1 (boolean) = false
+    qS (boolean) = true
+    BM1 (boolean) = false
+    hb (int) = 1
+Ch1 (short) = 2
+QW0 (short) = 479
+rC (int) = 1940311605
+RX0 (Is) = 0
+  >>> Expanding RX0:
+    px0 (long) = 0
+kr0 (String) = {STRING_5684}
+Uy0 (String) = 
+mp0 (byte) = 0
+JR (byte) = 0
+pt0 (byte) = 100
+eA0 (short) = 304
+CQ0 (short) = 6234
+ZE (short) = -1
+Sp0 (int) = 1000000
+tp1 (byte) = 3
+Vt1 (short) = 255
+y5 (short[]) = [S@434a72f2
+  >>> Expanding y5:
+  >>> Expanding Array y5 (len=4):
+    [0] = 56
+    [1] = 261
+    [2] = 271
+    [3] = 435
+vr0 (byte[]) = [B@5c8e7687
+  >>> Expanding vr0:
+  >>> Expanding Array vr0 (len=4):
+    [0] = 8
+    [1] = 15
+    [2] = 10
+    [3] = 15
+iM0 (short[]) = [S@2d093067
+  >>> Expanding iM0:
+  >>> Expanding Array iM0 (len=6):
+    [0] = 252
+    [1] = 0
+    [2] = 252
+    [3] = 0
+    [4] = 0
+    [5] = 6
+AM0 (byte) = 0
+pk0 (byte) = 0
+JF0 (byte) = 0
+sQ1 (byte) = 0
+s61 (byte) = 0
+Ww (byte) = 11
+Com1 (byte) = 50
+t8 (byte) = 2
+Hv (int) = -1
+lR1 (byte) = 0
+Kv (byte) = 2
+Tm1 (int) = 865926975
+bG0 (byte) = 0
+U30 (long) = 2097152
+sW (short) = 0
+w11 (int) = 1650650735
+K50 (short) = 0
+WD1 (short[]) = [S@6c056020
+  >>> Expanding WD1:
+  >>> Expanding Array WD1 (len=4):
+    [0] = 0
+    [1] = 0
+    [2] = 0
+    [3] = 0
+WA1 (Aw0) = null
+zW1 (Zq0) = None
+  >>> Expanding zW1:
+    Ee1 (byte) = -1
+    vl (kq) = f.kq@16e3d6d0
+      >>> Expanding vl:
+    ze (int) = 3
+Wy0 (Zq0[]) = [Lf.Zq0;@7cc842b0
+  >>> Expanding Wy0:
+  >>> Expanding Array Wy0 (len=0):
+FB1 (Dw1) = Bold
+  >>> Expanding FB1:
+    XS1 (byte) = 5
+    uK (Lr) = Defense
+      >>> Expanding uK:
+        YF1 (byte) = 2
+        HC (byte) = 2
+        Gs1 (String) = DEFENSE
+        eo0 (int) = 0
+        G6 (int) = 5
+        p51 (boolean) = false
+    uK = ERROR: Unable to make field private final java.lang.String java.lang.Enum.name accessible: module java.base does not "opens java.lang" to unnamed module @59690aa4
+    qJ (Lr) = Attack
+      >>> Expanding qJ:
+        YF1 (byte) = 1
+        HC (byte) = 1
+        Gs1 (String) = ATTACK
+        eo0 (int) = 0
+        G6 (int) = 5
+        p51 (boolean) = false
+    qJ = ERROR: Unable to make field private final java.lang.String java.lang.Enum.name accessible: module java.base does not "opens java.lang" to unnamed module @59690aa4
+    aH0 (DK0) = f.DK0@53dd29e0
+      >>> Expanding aH0:
+        DX0 (byte) = 4
+    rS (DK0) = f.DK0@2bf0bb93
+      >>> Expanding rS:
+        DX0 (byte) = 0
+zs0 (ZD) = f.ZD@11d0bff5
+  >>> Expanding zs0:
+    Ik1 (byte) = 0
+    ko1 (boolean) = false
+kZ (Is) = 0
+  >>> Expanding kZ:
+    px0 (long) = 0
+
+--- DEBUG: Party Slot 4 (Species 47) ---
+Gg0 (Is) = 467940815
+  >>> Expanding Gg0:
+    px0 (long) = 467940815
+lL1 (CoM4) = f.CoM4@14091e24
+  >>> Expanding lL1:
+    RY (byte) = 0
+    Dz1 (int) = 0
+Em1 (Is) = 7374879
+  >>> Expanding Em1:
+    px0 (long) = 7374879
+Dq1 (Ol0) = f.Ol0@408980aa
+  >>> Expanding Dq1:
+    c1 (byte) = 1
+    qN1 (int) = 6
+    TD0 (boolean) = true
+    tE1 (boolean) = false
+    qS (boolean) = true
+    BM1 (boolean) = false
+    hb (int) = 1
+Ch1 (short) = 5
+QW0 (short) = 47
+rC (int) = -817251486
+RX0 (Is) = 14254327
+  >>> Expanding RX0:
+    px0 (long) = 14254327
+kr0 (String) = ShaymusTCG
+Uy0 (String) = 
+mp0 (byte) = 0
+JR (byte) = 0
+pt0 (byte) = 100
+eA0 (short) = 260
+CQ0 (short) = 6251
+ZE (short) = -1
+Sp0 (int) = 1000000
+tp1 (byte) = 0
+Vt1 (short) = 255
+y5 (short[]) = [S@3733b1f4
+  >>> Expanding y5:
+  >>> Expanding Array y5 (len=4):
+    [0] = 206
+    [1] = 210
+    [2] = 249
+    [3] = 147
+vr0 (byte[]) = [B@70f0c352
+  >>> Expanding vr0:
+  >>> Expanding Array vr0 (len=4):
+    [0] = 40
+    [1] = 20
+    [2] = 15
+    [3] = 15
+iM0 (short[]) = [S@4e93d23e
+  >>> Expanding iM0:
+  >>> Expanding Array iM0 (len=6):
+    [0] = 9
+    [1] = 33
+    [2] = 27
+    [3] = 54
+    [4] = 4
+    [5] = 252
+AM0 (byte) = 0
+pk0 (byte) = 0
+JF0 (byte) = 0
+sQ1 (byte) = 0
+s61 (byte) = 0
+Ww (byte) = -95
+Com1 (byte) = 70
+t8 (byte) = 0
+Hv (int) = -1
+lR1 (byte) = 9
+Kv (byte) = 0
+Tm1 (int) = 905313788
+bG0 (byte) = 2
+U30 (long) = 0
+sW (short) = 6
+w11 (int) = 1736736391
+K50 (short) = 0
+WD1 (short[]) = [S@743b7025
+  >>> Expanding WD1:
+  >>> Expanding Array WD1 (len=4):
+    [0] = 0
+    [1] = 0
+    [2] = 0
+    [3] = 0
+WA1 (Aw0) = null
+zW1 (Zq0) = None
+  >>> Expanding zW1:
+    Ee1 (byte) = -1
+    vl (kq) = f.kq@16e3d6d0
+      >>> Expanding vl:
+    ze (int) = 3
+Wy0 (Zq0[]) = [Lf.Zq0;@5eadc347
+  >>> Expanding Wy0:
+  >>> Expanding Array Wy0 (len=0):
+FB1 (Dw1) = Timid
+  >>> Expanding FB1:
+    XS1 (byte) = 10
+    uK (Lr) = Speed
+      >>> Expanding uK:
+        YF1 (byte) = 3
+        HC (byte) = 5
+        Gs1 (String) = SPEED
+        eo0 (int) = 0
+        G6 (int) = 5
+        p51 (boolean) = false
+    uK = ERROR: Unable to make field private final java.lang.String java.lang.Enum.name accessible: module java.base does not "opens java.lang" to unnamed module @59690aa4
+    qJ (Lr) = Attack
+      >>> Expanding qJ:
+        YF1 (byte) = 1
+        HC (byte) = 1
+        Gs1 (String) = ATTACK
+        eo0 (int) = 0
+        G6 (int) = 5
+        p51 (boolean) = false
+    qJ = ERROR: Unable to make field private final java.lang.String java.lang.Enum.name accessible: module java.base does not "opens java.lang" to unnamed module @59690aa4
+    aH0 (DK0) = f.DK0@28b16193
+      >>> Expanding aH0:
+        DX0 (byte) = 2
+    rS (DK0) = f.DK0@2bf0bb93
+      >>> Expanding rS:
+        DX0 (byte) = 0
+zs0 (ZD) = f.ZD@11d0bff5
+  >>> Expanding zs0:
+    Ik1 (byte) = 0
+    ko1 (boolean) = false
+kZ (Is) = 0
+  >>> Expanding kZ:
+    px0 (long) = 0
+
+--- DEBUG: Party Slot 5 (Species 376) ---
+Gg0 (Is) = 173148319
+  >>> Expanding Gg0:
+    px0 (long) = 173148319
+lL1 (CoM4) = f.CoM4@14091e24
+  >>> Expanding lL1:
+    RY (byte) = 0
+    Dz1 (int) = 0
+Em1 (Is) = 7374879
+  >>> Expanding Em1:
+    px0 (long) = 7374879
+Dq1 (Ol0) = f.Ol0@408980aa
+  >>> Expanding Dq1:
+    c1 (byte) = 1
+    qN1 (int) = 6
+    TD0 (boolean) = true
+    tE1 (boolean) = false
+    qS (boolean) = true
+    BM1 (boolean) = false
+    hb (int) = 1
+Ch1 (short) = 0
+QW0 (short) = 376
+rC (int) = 579895574
+RX0 (Is) = 7374879
+  >>> Expanding RX0:
+    px0 (long) = 7374879
+kr0 (String) = CheapCyborg
+Uy0 (String) = 
+mp0 (byte) = 1
+JR (byte) = 0
+pt0 (byte) = 92
+eA0 (short) = 287
+CQ0 (short) = 5220
+ZE (short) = -1
+Sp0 (int) = 977632
+tp1 (byte) = 0
+Vt1 (short) = 255
+y5 (short[]) = [S@78e34499
+  >>> Expanding y5:
+  >>> Expanding Array y5 (len=4):
+    [0] = 309
+    [1] = 418
+    [2] = 428
+    [3] = 89
+vr0 (byte[]) = [B@5776a9f8
+  >>> Expanding vr0:
+  >>> Expanding Array vr0 (len=4):
+    [0] = 10
+    [1] = 30
+    [2] = 15
+    [3] = 10
+iM0 (short[]) = [S@6771efaa
+  >>> Expanding iM0:
+  >>> Expanding Array iM0 (len=6):
+    [0] = 85
+    [1] = 138
+    [2] = 47
+    [3] = 102
+    [4] = 78
+    [5] = 60
+AM0 (byte) = 0
+pk0 (byte) = 0
+JF0 (byte) = 0
+sQ1 (byte) = 0
+s61 (byte) = 0
+Ww (byte) = 63
+Com1 (byte) = 50
+t8 (byte) = 1
+Hv (int) = -1
+lR1 (byte) = 1
+Kv (byte) = 0
+Tm1 (int) = -543541547
+bG0 (byte) = 1
+U30 (long) = 0
+sW (short) = 0
+w11 (int) = 1633239257
+K50 (short) = 0
+WD1 (short[]) = [S@446fb72e
+  >>> Expanding WD1:
+  >>> Expanding Array WD1 (len=4):
+    [0] = 0
+    [1] = 0
+    [2] = 0
+    [3] = 0
+WA1 (Aw0) = null
+zW1 (Zq0) = None
+  >>> Expanding zW1:
+    Ee1 (byte) = -1
+    vl (kq) = f.kq@16e3d6d0
+      >>> Expanding vl:
+    ze (int) = 3
+Wy0 (Zq0[]) = [Lf.Zq0;@26caf4b6
+  >>> Expanding Wy0:
+  >>> Expanding Array Wy0 (len=0):
+FB1 (Dw1) = Quirky
+  >>> Expanding FB1:
+    XS1 (byte) = 24
+    uK (Lr) = null
+    qJ (Lr) = null
+    aH0 (DK0) = null
+    rS (DK0) = null
+zs0 (ZD) = f.ZD@11d0bff5
+  >>> Expanding zs0:
+    Ik1 (byte) = 0
+    ko1 (boolean) = false
+kZ (Is) = 0
+  >>> Expanding kZ:
+    px0 (long) = 0
+
