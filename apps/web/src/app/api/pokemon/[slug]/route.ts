@@ -56,6 +56,10 @@ export async function GET(
       if (!formIndexStr) throw new Error("Invalid form pattern");
       const formIndex = parseInt(formIndexStr, 10);
 
+      if (isNaN(formIndex)) {
+        throw new Error(`Invalid form index: "${formIndexStr}"`);
+      }
+
       // Fetch species to find the correct variety
       const speciesRes = await fetch(
         `https://pokeapi.co/api/v2/pokemon-species/${speciesId}`,
@@ -64,15 +68,17 @@ export async function GET(
 
       if (speciesRes.ok) {
         const speciesData = await speciesRes.json();
+        // PokeAPI varieties array: index 0 is base form, index 1+ are alternate forms
+        // Our form_id from Snooper: 0 = base, 1+ = alternate forms
+        // So we can use form_id directly as the index
         const variety = speciesData.varieties?.[formIndex];
 
         if (variety?.pokemon?.name) {
           slug = variety.pokemon.name;
         } else {
           // FORM FALLBACK: If variety index doesn't exist, fallback to base species ID
-          // This fixes the "Species X" error for unknown forms
           console.warn(
-            `Form ${formIndex} not found for species ${speciesId}, falling back to base.`
+            `Form ${formIndex} not found for species ${speciesId} (varieties: ${speciesData.varieties?.length}), falling back to base.`
           );
           slug = speciesId || slug;
         }

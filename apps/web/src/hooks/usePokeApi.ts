@@ -22,7 +22,7 @@ export function usePokeApiSpecies(ids: (string | number | undefined | null)[]) {
   return useQueries({
     queries: validIds.map((id) => ({
       queryKey: CONFIG.queryKeys.pokemonSpecies(id),
-      queryFn: () => PokemonApi.enrichment.getSpecies(Number(id)),
+      queryFn: () => PokemonApi.enrichment.getSpecies(id),
       staleTime: CONFIG.query.staleTime.static,
       gcTime: CONFIG.query.gcTime,
     })),

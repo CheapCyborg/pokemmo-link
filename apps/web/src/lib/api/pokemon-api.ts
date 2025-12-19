@@ -56,7 +56,7 @@ export const PokemonApi = {
     /**
      * Get species data from PokeAPI proxy
      */
-    getSpecies: async (speciesId: number): Promise<PokeApiSpecies> => {
+    getSpecies: async (speciesId: number | string): Promise<PokeApiSpecies> => {
       return apiClient.get<PokeApiSpecies>(
         `${CONFIG.api.endpoints.pokemon}/${speciesId}`
       );
