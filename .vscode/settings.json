@@ -35,7 +35,10 @@
     ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
     ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
-  "java.configuration.updateBuildConfiguration": "interactive",
+  "pokemmo.path": "C:\\Program Files\\PokeMMO",
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m -Xlog:disable",
   "files.exclude": {
     "**/.next": true,
     "**/node_modules": true,
@@ -83,5 +86,21 @@
     "javascriptreact",
     "typescript",
     "typescriptreact"
-  ]
+  ],
+  "tailwind-fold.autoFold": true,
+  "tailwind-fold.foldStyle": "QUOTES",
+  "tailwind-fold.unfoldIfLineSelected": true,
+  "tailwind-fold.showTailwindImage": true,
+  "tailwind-fold.foldedText": "...",
+  "tailwind-fold.foldedTextColor": "#6366f1",
+  "tailwind-fold.foldedTextBackgroundColor": "#1e293b20",
+  "tailwind-fold.unfoldedTextOpacity": 0.6,
+  "tailwind-fold.supportedLanguages": [
+    "typescriptreact",
+    "javascriptreact",
+    "typescript",
+    "javascript",
+    "html"
+  ],
+  "tailwind-fold.foldLengthThreshold": 60
 }

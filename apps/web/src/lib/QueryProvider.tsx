@@ -4,7 +4,8 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { imageCache } from "./imageCache";
 
 export function QueryProvider({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -20,6 +21,11 @@ export function QueryProvider({ children }: { children: ReactNode }) {
         },
       })
   );
+
+  // Initialize image cache on mount
+  useEffect(() => {
+    imageCache.init();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -14,7 +14,10 @@ interface PcBoxViewerProps {
   onOpenDetails: (pokemon: EnrichedPokemon) => void;
 }
 
-function PcBoxViewerComponent({ pcQueryData, onOpenDetails }: PcBoxViewerProps) {
+function PcBoxViewerComponent({
+  pcQueryData,
+  onOpenDetails,
+}: PcBoxViewerProps) {
   const [activeBox, setActiveBox] = useState<string | null>(null);
 
   const pcBoxKeys = useMemo(() => {
@@ -35,7 +38,7 @@ function PcBoxViewerComponent({ pcQueryData, onOpenDetails }: PcBoxViewerProps) 
   const activeBoxData = useMemo(() => {
     if (!pcQueryData?.boxes || !activeBox) return [];
     const box = pcQueryData.boxes[activeBox];
-    if (!box) return [];
+    if (!box || !box.pokemon) return [];
     return [...box.pokemon].sort((a, b) => a.slot - b.slot);
   }, [pcQueryData, activeBox]);
 
@@ -48,7 +51,9 @@ function PcBoxViewerComponent({ pcQueryData, onOpenDetails }: PcBoxViewerProps) 
         <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-full mb-4">
           <Box size={32} className="text-slate-300 dark:text-slate-600" />
         </div>
-        <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">PC Data Unavailable</p>
+        <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">
+          PC Data Unavailable
+        </p>
       </div>
     );
   }
@@ -91,7 +96,7 @@ function PcBoxViewerComponent({ pcQueryData, onOpenDetails }: PcBoxViewerProps) 
           <Spinner />
         </div>
       ) : enrichedPcList.length > 0 ? (
-        <div className="min-h-[500px]"> 
+        <div className="min-h-[500px]">
           <VirtuosoGrid
             key={activeBox} // <--- CRITICAL FIX FOR BOX SWITCHING
             useWindowScroll

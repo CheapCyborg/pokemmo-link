@@ -3,7 +3,7 @@ import com.google.gson.reflect.TypeToken
 import com.pokeemu.client.Client
 import java.io.File
 import java.net.HttpURLConnection
-import java.net.URL
+import java.net.URI
 import net.bytebuddy.agent.ByteBuddyAgent
 import net.bytebuddy.agent.builder.AgentBuilder
 import net.bytebuddy.asm.Advice
@@ -81,7 +81,7 @@ object SnooperHelper {
 
     fun postToNextJs(payload: Any) {
         try {
-            val url = URL("http://localhost:3000/api/ingest")
+            val url = URI("http://localhost:3000/api/ingest").toURL()
             val connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "application/json")
@@ -320,7 +320,7 @@ object SnooperHelper {
             // Write logic based on container type
             when (containerType) {
                 "party" -> {
-                    
+
                 val env = PokemonDumpSchema.envelope(
                     packetClass = packet.javaClass.name,
                     containerId = hbRaw,
@@ -360,7 +360,10 @@ object SnooperHelper {
                         val slotInBox = globalSlot % PC_BOX_SIZE
                         val (boxKey, boxType, boxNumericId) = resolveBoxKeyAndType(boxIndex0)
                         val updated = record.copy(slot = slotInBox)
-                        boxGroups.computeIfAbsent(boxKey) { mutableListOf() }.add(updated)
+                        if (!boxGroups.containsKey(boxKey)) {
+                            boxGroups[boxKey] = mutableListOf()
+                        }
+                        boxGroups[boxKey]!!.add(updated)
                         boxMeta[boxKey] = Pair(boxType, boxNumericId)
                     }
 
@@ -489,10 +492,10 @@ object SnooperHelper {
             val slotIndexReal = (getFieldValue(pokemon, FIELD_SLOT_INDEX_REAL) as? Number)?.toInt() ?: 0
 
             val isShiny = (flags and 65536L) != 0L || (flags and 67108864L) != 0L
-            
+
             // Gift Flag (Bit 21)
             val isGift = (flags and 2097152L) != 0L
-            
+
             // Alpha Flag (Variant 6)
             val isAlpha = variant == 6
 

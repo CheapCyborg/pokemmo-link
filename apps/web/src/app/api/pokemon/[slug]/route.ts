@@ -48,7 +48,7 @@ export async function GET(
       // id-479-form-2 -> ["id", "479", "form", "2"]
       const speciesId = parts[1];
       const formIndexStr = parts[3];
-      
+
       if (!formIndexStr) throw new Error("Invalid form pattern");
       const formIndex = parseInt(formIndexStr, 10);
 
@@ -61,14 +61,16 @@ export async function GET(
       if (speciesRes.ok) {
         const speciesData = await speciesRes.json();
         const variety = speciesData.varieties?.[formIndex];
-        
+
         if (variety?.pokemon?.name) {
           slug = variety.pokemon.name;
         } else {
           // FORM FALLBACK: If variety index doesn't exist, fallback to base species ID
           // This fixes the "Species X" error for unknown forms
-          console.warn(`Form ${formIndex} not found for species ${speciesId}, falling back to base.`);
-          slug = speciesId || slug; 
+          console.warn(
+            `Form ${formIndex} not found for species ${speciesId}, falling back to base.`
+          );
+          slug = speciesId || slug;
         }
       } else {
         // Species lookup failed? Fallback to ID just in case
@@ -78,7 +80,7 @@ export async function GET(
       console.error("Failed to resolve form slug", e);
       // Fallback: If parsing fails, try to extract just the ID part if possible
       const parts = slug.split("-");
-      if (parts[1]) slug = parts[1]; 
+      if (parts[1]) slug = parts[1];
     }
   }
 
@@ -94,7 +96,7 @@ export async function GET(
   const json = (await res.json()) as PokeApiPokemon;
 
   // 3. Fetch species data for gender_rate
-  let genderRate = -1; 
+  let genderRate = -1;
   try {
     const speciesRes = await fetch(
       `https://pokeapi.co/api/v2/pokemon-species/${json.id}`,

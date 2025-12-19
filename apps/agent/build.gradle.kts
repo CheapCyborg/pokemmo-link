@@ -10,6 +10,9 @@ repositories {
 }
 
 dependencies {
+    // Kotlin Standard Library
+    implementation(kotlin("stdlib"))
+
     // ByteBuddy (For hooking/injection)
     implementation("net.bytebuddy:byte-buddy:1.14.4")
     implementation("net.bytebuddy:byte-buddy-agent:1.14.4")
@@ -38,8 +41,8 @@ val runSnooper = tasks.register<JavaExec>("runSnooper") {
     mainClass.set("SnooperKt")
     classpath = sourceSets["main"].runtimeClasspath
     // Read from gradle.properties or environment variable
-    val pokemmoPath = project.findProperty("pokemmo.path") as String? 
-        ?: System.getenv("POKEMMO_PATH") 
+    val pokemmoPath = project.findProperty("pokemmo.path") as String?
+        ?: System.getenv("POKEMMO_PATH")
         ?: "C:\\Program Files\\PokeMMO"
     workingDir = file(pokemmoPath)
 }
