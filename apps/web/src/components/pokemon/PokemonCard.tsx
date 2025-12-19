@@ -20,13 +20,11 @@ const PokemonCardComponent = ({
 }: PokemonCardProps) => {
   const nickname = pokemon.identity.nickname?.trim();
   const hasNickname = nickname && !nickname.startsWith("Species ");
-  
   const displayName = hasNickname ? nickname : (pokemon.species?.displayName || `Species ${pokemon.identity.species_id}`);
   const speciesName = pokemon.species?.displayName || `Species ${pokemon.identity.species_id}`;
-  
   // 1. URLs
   const animatedUrl = pokemon.species?.sprites.animated;
-  const staticUrl = pokemon.species?.sprites.front_default || 
+  const staticUrl = pokemon.species?.sprites.front_default ||
     `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.identity.species_id}.png`;
 
   // 2. Default to Static (PNG)
@@ -129,7 +127,7 @@ const PokemonCardComponent = ({
               <span>{pokemon.state.current_hp}/{pokemon.computed.calculatedStats.hp}</span>
             </div>
             <div className="h-1.5 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-green-500 rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, (pokemon.state.current_hp / pokemon.computed.calculatedStats.hp) * 100)}%` }}
               />

@@ -488,11 +488,12 @@ object SnooperHelper {
             val pp = parseStatsArray(getFieldValue(pokemon, FIELD_PP))
             val slotIndexReal = (getFieldValue(pokemon, FIELD_SLOT_INDEX_REAL) as? Number)?.toInt() ?: 0
 
-            // 1. Shiny Flag (Bit 26 of U30)
-            val isShiny = (flags and 67108864L) != 0L
-            // 2. Gift/Untradable Flag (Bit 21 of U30)
+            val isShiny = (flags and 65536L) != 0L || (flags and 67108864L) != 0L
+            
+            // Gift Flag (Bit 21)
             val isGift = (flags and 2097152L) != 0L
-            // 3. Alpha Flag (Variant 6)
+            
+            // Alpha Flag (Variant 6)
             val isAlpha = variant == 6
 
             return linkedMapOf(
