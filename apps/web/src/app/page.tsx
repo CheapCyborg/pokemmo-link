@@ -59,6 +59,12 @@ export default function Page() {
     setDetailsOpen(true);
   }, []);
 
+  const handleRefresh = useCallback(() => {
+    partyQuery.refetch();
+    daycareQuery.refetch();
+    pcQuery.refetch();
+  }, [partyQuery, daycareQuery, pcQuery]);
+
   const countPill =
     activeTab === "party"
       ? `${teamData.length} / 6`
@@ -74,6 +80,7 @@ export default function Page() {
         isLive={hasData ? true : false}
         status={hasData ? "Live" : "Connecting..."}
         onFileUpload={() => {}}
+        onRefresh={handleRefresh}
       />
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">

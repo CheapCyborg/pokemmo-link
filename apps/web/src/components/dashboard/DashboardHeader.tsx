@@ -1,19 +1,21 @@
 "use client";
 
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Box, Database } from "lucide-react";
+import { Box, Database, RefreshCw } from "lucide-react";
 import React from "react";
 
 interface DashboardHeaderProps {
   isLive: boolean;
   status: string;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRefresh: () => void;
 }
 
 export const DashboardHeader = ({
   isLive,
   status,
   onFileUpload,
+  onRefresh,
 }: DashboardHeaderProps) => {
   return (
     <header className="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-center">
@@ -33,6 +35,13 @@ export const DashboardHeader = ({
 
       <div className="flex items-center space-x-4">
         <ThemeToggle />
+
+        <button
+          onClick={onRefresh}
+          className="p-2 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+          title="Refresh Data">
+          <RefreshCw size={16} />
+        </button>
         
         <label className="cursor-pointer px-3 py-1 rounded-full text-xs font-bold border bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900 hover:bg-indigo-50 dark:hover:bg-slate-700 transition flex items-center">
           <Database size={14} className="mr-2" />

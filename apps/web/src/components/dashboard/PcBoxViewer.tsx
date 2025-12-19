@@ -1,7 +1,7 @@
 "use client";
 
 import { Box } from "lucide-react";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useDeferredValue, useMemo, useState } from "react";
 import { VirtuosoGrid } from "react-virtuoso";
 
 import { PokemonCard } from "@/components/pokemon/PokemonCard";
@@ -19,6 +19,8 @@ function PcBoxViewerComponent({
   onOpenDetails,
 }: PcBoxViewerProps) {
   const [activeBox, setActiveBox] = useState<string | null>(null);
+  const deferredActiveBox = useDeferredValue(activeBox);
+  const isPending = activeBox !== deferredActiveBox;
 
   const pcBoxKeys = useMemo(() => {
     if (!pcQueryData?.boxes) return [];
@@ -36,11 +38,11 @@ function PcBoxViewerComponent({
   }, [activeBox, pcBoxKeys]);
 
   const activeBoxData = useMemo(() => {
-    if (!pcQueryData?.boxes || !activeBox) return [];
-    const box = pcQueryData.boxes[activeBox];
+    if (!pcQueryData?.boxes || !deferredActiveBox) return [];
+    const box = pcQueryData.boxes[deferredActiveBox];
     if (!box || !box.pokemon) return [];
     return [...box.pokemon].sort((a, b) => a.slot - b.slot);
-  }, [pcQueryData, activeBox]);
+  }, [pcQueryData, deferredActiveBox]);
 
   // Fetch data
   const enrichedPcState = useEnrichedPokemon(activeBoxData);
@@ -91,18 +93,18 @@ function PcBoxViewerComponent({
          2. key={activeBox} FORCES a complete reset of the grid when switching boxes.
             This fixes the glitch where the old scroll position/data would linger.
       */}
-      {enrichedPcState.isLoading ? (
+      {enrichedPcState.isLoading || isPending ? (
         <div className="min-h-[500px] flex items-center justify-center">
           <Spinner />
         </div>
       ) : enrichedPcState.hasData ? (
         <div className="min-h-[500px]">
           <VirtuosoGrid
-            key={activeBox} // <--- CRITICAL FIX FOR BOX SWITCHING
+            key={deferredActiveBox} // <--- CRITICAL FIX FOR BOX SWITCHING
             useWindowScroll
             data={enrichedPcState.data ?? []}
             totalCount={enrichedPcState.data?.length ?? 0}
-            overscan={2000} // Keep this high for smoother scrolling
+            overscan={500} // Reduced from 2000 to improve performance
             listClassName="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
             itemContent={(index, p) => (
               <PokemonCard

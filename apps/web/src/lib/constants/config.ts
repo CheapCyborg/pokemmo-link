@@ -11,7 +11,7 @@ export const CONFIG = {
       live: 1000, // Live game data (refetches frequently)
     },
     gcTime: 7 * 24 * 60 * 60 * 1000, // 7 days
-    refetchInterval: 3000, // 3 seconds for live data
+    refetchInterval: false, // Manual refresh only
   },
   containers: {
     party: { capacity: 6 },
