@@ -1,7 +1,7 @@
 "use client";
 
 import { Box } from "lucide-react";
-import { memo, useEffect, useDeferredValue, useMemo, useState } from "react";
+import { memo, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { VirtuosoGrid } from "react-virtuoso";
 
 import { PokemonCard } from "@/components/pokemon/PokemonCard";

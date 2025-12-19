@@ -42,7 +42,7 @@ export const DashboardHeader = ({
           title="Refresh Data">
           <RefreshCw size={16} />
         </button>
-        
+
         <label className="cursor-pointer px-3 py-1 rounded-full text-xs font-bold border bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900 hover:bg-indigo-50 dark:hover:bg-slate-700 transition flex items-center">
           <Database size={14} className="mr-2" />
           Load Dump
