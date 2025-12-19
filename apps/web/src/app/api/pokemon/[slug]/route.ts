@@ -1,3 +1,5 @@
+import type { PokeApiSpecies, PokemonType } from "@/types/pokemon";
+import { POKEMON_TYPES } from "@/types/pokemon";
 import { NextResponse } from "next/server";
 
 const revalidate = 60 * 60 * 24;
@@ -7,12 +9,14 @@ type PokeApiPokemon = {
   name: string;
   sprites?: {
     front_default?: string | null;
+    front_shiny?: string | null;
     other?: unknown;
     versions?: {
       "generation-v"?: {
         "black-white"?: {
           animated?: {
             front_default?: string | null;
+            front_shiny?: string | null;
           };
         };
       };
@@ -27,7 +31,7 @@ type PokeApiPokemon = {
   }>;
 };
 
-type PokeApiSpecies = {
+type PokeApiSpeciesResponse = {
   gender_rate: number;
   varieties?: Array<{
     pokemon?: { name?: string };
@@ -103,7 +107,7 @@ export async function GET(
       { next: { revalidate } }
     );
     if (speciesRes.ok) {
-      const speciesData = (await speciesRes.json()) as PokeApiSpecies;
+      const speciesData = (await speciesRes.json()) as PokeApiSpeciesResponse;
       genderRate = speciesData.gender_rate ?? -1;
     }
   } catch (e) {
@@ -118,20 +122,29 @@ export async function GET(
 
   const types = (json.types ?? [])
     .map((t) => t.type?.name)
-    .filter((x): x is string => Boolean(x));
+    .filter((x): x is string => Boolean(x))
+    .filter((typeName): typeName is PokemonType =>
+      POKEMON_TYPES.includes(typeName as PokemonType)
+    );
 
-  return NextResponse.json({
+  const response: PokeApiSpecies = {
     id: json.id,
     name: json.name,
     sprites: {
       front_default: json.sprites?.front_default ?? null,
+      front_shiny: json.sprites?.front_shiny ?? null,
       animated:
         json.sprites?.versions?.["generation-v"]?.["black-white"]?.animated
           ?.front_default ?? null,
+      animated_shiny:
+        json.sprites?.versions?.["generation-v"]?.["black-white"]?.animated
+          ?.front_shiny ?? null,
     },
     stats,
     types,
-    abilities: json.abilities,
+    abilities: json.abilities ?? [],
     gender_rate: genderRate,
-  });
+  };
+
+  return NextResponse.json(response);
 }

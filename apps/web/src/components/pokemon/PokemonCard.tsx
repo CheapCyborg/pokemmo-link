@@ -1,5 +1,6 @@
 "use client";
 import { imageCache } from "@/lib/imageCache";
+import { getSpriteUrl } from "@/lib/poke";
 import type { EnrichedPokemon } from "@/types/pokemon";
 import Image from "next/image";
 import type { ComponentPropsWithoutRef } from "react";
@@ -7,7 +8,10 @@ import { memo, useEffect, useRef, useState } from "react";
 import { NatureBadge } from "./NatureBadge";
 import { TypeBadge } from "./TypeBadge";
 
-interface PokemonCardProps extends Omit<ComponentPropsWithoutRef<"button">, "onClick"> {
+interface PokemonCardProps extends Omit<
+  ComponentPropsWithoutRef<"button">,
+  "onClick"
+> {
   pokemon: EnrichedPokemon;
   onCardClick: (pokemon: EnrichedPokemon) => void;
 }
@@ -20,12 +24,16 @@ const PokemonCardComponent = ({
 }: PokemonCardProps) => {
   const nickname = pokemon.identity.nickname?.trim();
   const hasNickname = nickname && !nickname.startsWith("Species ");
-  const displayName = hasNickname ? nickname : (pokemon.species?.displayName || `Species ${pokemon.identity.species_id}`);
-  const speciesName = pokemon.species?.displayName || `Species ${pokemon.identity.species_id}`;
+  const displayName = hasNickname
+    ? nickname
+    : pokemon.species?.displayName || `Species ${pokemon.identity.species_id}`;
+  const speciesName =
+    pokemon.species?.displayName || `Species ${pokemon.identity.species_id}`;
   // 1. URLs
   const animatedUrl = pokemon.species?.sprites.animated;
-  const staticUrl = pokemon.species?.sprites.front_default ||
-    `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.identity.species_id}.png`;
+  const staticUrl =
+    pokemon.species?.sprites.front_default ||
+    getSpriteUrl(pokemon.identity.species_id, false);
 
   // 2. Default to Static (PNG)
   const [imgSrc, setImgSrc] = useState(staticUrl);
@@ -77,8 +85,7 @@ const PokemonCardComponent = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={`text-left w-full group will-change-transform ${className || ""}`}
-      {...rest}
-    >
+      {...rest}>
       <div className="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-800 overflow-hidden group-hover:shadow-xl group-hover:scale-[1.02] group-hover:border-indigo-500/50 dark:group-hover:border-indigo-400/50 transition-all duration-300 flex flex-col">
         <div className="p-3 flex items-center space-x-3 bg-linear-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 border-b border-gray-100 dark:border-slate-700 relative group-hover:from-indigo-50/50 group-hover:to-indigo-100/50 dark:group-hover:from-slate-800 dark:group-hover:to-slate-800 transition-colors duration-300">
           <div className="absolute top-2 right-2 bg-gray-800 dark:bg-slate-950 text-white text-[8px] px-1.5 py-1 rounded-sm font-bold z-10 shadow-sm font-['Press_Start_2P'] leading-none">
@@ -120,20 +127,26 @@ const PokemonCardComponent = ({
         </div>
 
         {/* Minimal HP Bar */}
-        {pokemon.state.current_hp !== null && pokemon.computed?.calculatedStats.hp && (
-          <div className="px-3 py-2 border-b border-gray-100 dark:border-slate-800">
-            <div className="flex justify-between text-[9px] mb-1 font-['Press_Start_2P'] text-slate-600 dark:text-slate-400">
-              <span>HP</span>
-              <span>{pokemon.state.current_hp}/{pokemon.computed.calculatedStats.hp}</span>
+        {pokemon.state.current_hp !== null &&
+          pokemon.computed?.calculatedStats.hp && (
+            <div className="px-3 py-2 border-b border-gray-100 dark:border-slate-800">
+              <div className="flex justify-between text-[9px] mb-1 font-['Press_Start_2P'] text-slate-600 dark:text-slate-400">
+                <span>HP</span>
+                <span>
+                  {pokemon.state.current_hp}/
+                  {pokemon.computed.calculatedStats.hp}
+                </span>
+              </div>
+              <div className="h-1.5 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-green-500 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.min(100, (pokemon.state.current_hp / pokemon.computed.calculatedStats.hp) * 100)}%`,
+                  }}
+                />
+              </div>
             </div>
-            <div className="h-1.5 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-green-500 rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(100, (pokemon.state.current_hp / pokemon.computed.calculatedStats.hp) * 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
+          )}
 
         <div className="bg-gray-50 dark:bg-slate-800/50 px-3 py-2 text-[9px] text-gray-400 dark:text-slate-500 border-t border-gray-100 dark:border-slate-800 flex justify-between items-center">
           <span className="truncate">OT: {pokemon.identity.ot_name}</span>

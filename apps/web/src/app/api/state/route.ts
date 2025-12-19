@@ -1,12 +1,20 @@
-import { NextResponse } from "next/server";
+import type { ContainerType, DumpEnvelope } from "@/types/pokemon";
+import { CONTAINER_TYPES } from "@/types/pokemon";
 import fs from "fs/promises";
+import { NextResponse } from "next/server";
 import path from "path";
-import type { DumpEnvelope } from "@/types/pokemon";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const source = searchParams.get("source") || "party"; // Default to party
+    const sourceParam = searchParams.get("source") || "party";
+
+    // Validate source is a valid ContainerType
+    const source: ContainerType = CONTAINER_TYPES.includes(
+      sourceParam as ContainerType
+    )
+      ? (sourceParam as ContainerType)
+      : "party"; // Default to party if invalid
 
     const filename = `dump-${source}.json`;
     const filePath = path.join(process.cwd(), "data", filename);

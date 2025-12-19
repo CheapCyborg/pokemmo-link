@@ -43,7 +43,7 @@ function PcBoxViewerComponent({
   }, [pcQueryData, activeBox]);
 
   // Fetch data
-  const { data: enrichedPcList, isLoading } = useEnrichedPokemon(activeBoxData);
+  const enrichedPcState = useEnrichedPokemon(activeBoxData);
 
   if (!pcQueryData?.boxes && !activeBox) {
     return (
@@ -91,17 +91,17 @@ function PcBoxViewerComponent({
          2. key={activeBox} FORCES a complete reset of the grid when switching boxes.
             This fixes the glitch where the old scroll position/data would linger.
       */}
-      {isLoading ? (
+      {enrichedPcState.isLoading ? (
         <div className="min-h-[500px] flex items-center justify-center">
           <Spinner />
         </div>
-      ) : enrichedPcList.length > 0 ? (
+      ) : enrichedPcState.hasData ? (
         <div className="min-h-[500px]">
           <VirtuosoGrid
             key={activeBox} // <--- CRITICAL FIX FOR BOX SWITCHING
             useWindowScroll
-            data={enrichedPcList}
-            totalCount={enrichedPcList.length}
+            data={enrichedPcState.data ?? []}
+            totalCount={enrichedPcState.data?.length ?? 0}
             overscan={2000} // Keep this high for smoother scrolling
             listClassName="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
             itemContent={(index, p) => (

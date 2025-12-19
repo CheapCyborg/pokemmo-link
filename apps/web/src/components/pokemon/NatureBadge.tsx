@@ -1,8 +1,9 @@
 import { NATURE_MULTIPLIERS } from "@/lib/poke";
 import { cn } from "@/lib/utils";
+import type { Nature } from "@/types/pokemon";
 
 interface NatureBadgeProps {
-  nature: string | null | undefined;
+  nature: Nature | null | undefined;
   className?: string;
 }
 

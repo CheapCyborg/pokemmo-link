@@ -1,9 +1,11 @@
 // app/api/move/[id]/route.ts
+import type { PokeApiMove, PokemonType } from "@/types/pokemon";
+import { POKEMON_TYPES } from "@/types/pokemon";
 import { NextResponse } from "next/server";
 
 const revalidate = 60 * 60 * 24; // 24h
 
-type PokeApiMove = {
+type PokeApiMoveResponse = {
   id: number;
   name: string;
   accuracy?: number | null;
@@ -31,29 +33,29 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const json = (await res.json()) as PokeApiMove;
+  const json = (await res.json()) as PokeApiMoveResponse;
 
   const description =
     json.flavor_text_entries
       ?.find((entry) => entry.language.name === "en")
       ?.flavor_text?.replace(/\n/g, " ") ?? null;
 
-  const damage_class = json.damage_class?.name ?? null;
+  const typeName = json.type?.name ?? null;
+  const validType: PokemonType | null =
+    typeName && POKEMON_TYPES.includes(typeName as PokemonType)
+      ? (typeName as PokemonType)
+      : null;
 
-  return NextResponse.json({
+  const response: PokeApiMove = {
     id: json.id,
     name: json.name,
     accuracy: json.accuracy ?? null,
     power: json.power ?? null,
     pp: json.pp ?? null,
-    type: json.type?.name ?? null,
-
-    // ✅ what your UI expects
-    damage_class,
-
-    // (optional) keep old field so nothing else breaks
-    damageClass: damage_class,
-
+    type: validType,
+    damage_class: json.damage_class?.name ?? null,
     description,
-  });
+  };
+
+  return NextResponse.json(response);
 }

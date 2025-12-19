@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { imageCache } from "@/lib/imageCache";
-import { toTitleCase } from "@/lib/poke";
+import { getSpriteUrl, toTitleCase } from "@/lib/poke";
 import type { EnrichedPokemon } from "@/types/pokemon";
 import { Heart, Mars, Venus, Volume2 } from "lucide-react";
 import Image from "next/image";
@@ -28,14 +28,14 @@ export function PokemonDetailsModal({
   pokemon,
 }: PokemonDetailsModalProps) {
   // Note: We do NOT fetch moves here anymore. They are pre-loaded in pokemon.movesData!
-  
+
   const types = pokemon?.species?.types || [];
 
   // --- OPTIMIZED IMAGE LOGIC ---
   const animatedUrl = pokemon?.species?.sprites?.animated;
-  const staticUrl = 
+  const staticUrl =
     pokemon?.species?.sprites?.front_default ||
-    (pokemon ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.identity.species_id}.png` : "");
+    (pokemon ? getSpriteUrl(pokemon.identity.species_id, false) : "");
 
   // Determine initial image based on global cache
   const getInitialImage = () => {
@@ -107,8 +107,7 @@ export function PokemonDetailsModal({
                     <button
                       onClick={playCry}
                       className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-                      title="Play Cry"
-                    >
+                      title="Play Cry">
                       <Volume2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -208,8 +207,7 @@ export function PokemonDetailsModal({
                     {pokemon.movesData.map((move) => (
                       <div
                         key={move.id}
-                        className="rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-2 text-xs"
-                      >
+                        className="rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-2 text-xs">
                         <div className="flex justify-between items-center mb-1">
                           <span className="font-bold text-slate-700 dark:text-slate-200">
                             {toTitleCase(move.name)}
@@ -228,14 +226,14 @@ export function PokemonDetailsModal({
                               className="rounded"
                             />
                           )}
-                          
+
                           {/* Damage Class Badge (Physical/Special) */}
                           {!!move.damage_class && (
                             <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-bold uppercase">
                               {move.damage_class}
                             </span>
                           )}
-                          
+
                           {/* Stats (Power, Accuracy, PP) */}
                           <span className="ml-auto text-[10px] font-mono text-slate-500">
                             PWR: {move.power ?? "-"} • ACC:{" "}
@@ -243,7 +241,7 @@ export function PokemonDetailsModal({
                             {move.pp_left ?? move.pp ?? "-"}
                           </span>
                         </div>
-                        
+
                         {/* Description */}
                         {!!move.description && (
                           <p className="text-slate-500 italic leading-tight">

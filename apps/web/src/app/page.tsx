@@ -3,7 +3,7 @@
 import { RefreshCw, Search } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
-import type { EnrichedPokemon, PcDumpEnvelope } from "@/types/pokemon";
+import type { EnrichedPokemon } from "@/types/pokemon";
 
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
@@ -19,31 +19,36 @@ import { useLiveData } from "@/hooks/useLiveData";
 export default function Page() {
   const [userProfileId] = useState<string>("local-poc");
   const [playerName] = useState<string>("Cyborg");
-  const [activeTab, setActiveTab] = useState<"party" | "daycare" | "pc">("party");
+  const [activeTab, setActiveTab] = useState<"party" | "daycare" | "pc">(
+    "party"
+  );
 
   // Fetch live data
   const partyQuery = useLiveData("party");
   const daycareQuery = useLiveData("daycare");
-  const pcQuery = useLiveData<PcDumpEnvelope>("pc_boxes");
+  const pcQuery = useLiveData("pc_boxes");
 
   // --- Data Preparation ---
   const teamData = useMemo(
     () => [...(partyQuery.data?.pokemon ?? [])].sort((a, b) => a.slot - b.slot),
     [partyQuery.data?.pokemon]
   );
-  
+
   const daycareData = useMemo(
-    () => [...(daycareQuery.data?.pokemon ?? [])].sort((a, b) => a.slot - b.slot),
+    () =>
+      [...(daycareQuery.data?.pokemon ?? [])].sort((a, b) => a.slot - b.slot),
     [daycareQuery.data?.pokemon]
   );
 
   // --- Enrichment with Loading States ---
-  const { data: enrichedTeam, isLoading: teamLoading } = useEnrichedPokemon(teamData);
-  const { data: enrichedDaycare, isLoading: daycareLoading } = useEnrichedPokemon(daycareData);
+  const enrichedTeamState = useEnrichedPokemon(teamData);
+  const enrichedDaycareState = useEnrichedPokemon(daycareData);
 
   // --- Status ---
-  const isLoading = partyQuery.isLoading || daycareQuery.isLoading || pcQuery.isLoading;
-  const hasData = teamData.length > 0 || daycareData.length > 0 || (pcQuery.data?.boxes && Object.keys(pcQuery.data.boxes).length > 0);
+  const isLoading =
+    partyQuery.isLoading || daycareQuery.isLoading || pcQuery.isLoading;
+  const hasData =
+    teamData.length > 0 || daycareData.length > 0 || pcQuery.hasData;
 
   // --- Modal Logic ---
   const [selected, setSelected] = useState<EnrichedPokemon | null>(null);
@@ -55,13 +60,21 @@ export default function Page() {
   }, []);
 
   const countPill =
-    activeTab === "party" ? `${teamData.length} / 6`
-    : activeTab === "daycare" ? `${daycareData.length}`
-    : pcQuery.data?.boxes ? "Stored" : "0";
+    activeTab === "party"
+      ? `${teamData.length} / 6`
+      : activeTab === "daycare"
+        ? `${daycareData.length}`
+        : pcQuery.hasData
+          ? "Stored"
+          : "0";
 
   return (
     <div className="min-h-screen font-sans p-4 md:p-8">
-      <DashboardHeader isLive={hasData ? true : false} status={hasData ? "Live" : "Connecting..."} onFileUpload={() => {}} />
+      <DashboardHeader
+        isLive={hasData ? true : false}
+        status={hasData ? "Live" : "Connecting..."}
+        onFileUpload={() => {}}
+      />
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
         <DashboardSidebar
@@ -74,18 +87,35 @@ export default function Page() {
         <div className="lg:col-span-3">
           {/* Top Bar */}
           <div className="bg-white dark:bg-slate-900 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 mb-6 flex items-center gap-3">
-             <div className="relative grow">
-              <input type="text" placeholder="Search Pokemon..." className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg outline-none text-sm" />
-              <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
+            <div className="relative grow">
+              <input
+                type="text"
+                placeholder="Search Pokemon..."
+                className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg outline-none text-sm"
+              />
+              <Search
+                size={16}
+                className="absolute left-3 top-2.5 text-slate-400"
+              />
             </div>
-            <button onClick={() => { partyQuery.refetch(); daycareQuery.refetch(); pcQuery.refetch(); }} className="p-2 text-slate-400 hover:text-indigo-600 transition">
+            <button
+              onClick={() => {
+                partyQuery.refetch();
+                daycareQuery.refetch();
+                pcQuery.refetch();
+              }}
+              className="p-2 text-slate-400 hover:text-indigo-600 transition">
               <RefreshCw size={18} />
             </button>
           </div>
 
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">
-              {activeTab === "party" ? "Active Party" : activeTab === "daycare" ? "Daycare" : "PC Boxes"}
+              {activeTab === "party"
+                ? "Active Party"
+                : activeTab === "daycare"
+                  ? "Daycare"
+                  : "PC Boxes"}
             </h2>
             <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold px-3 py-1 rounded-full">
               {countPill}
@@ -94,33 +124,39 @@ export default function Page() {
 
           {/* Content Area */}
           {isLoading && !hasData ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-               {[...Array(6)].map((_, i) => <PokemonCardSkeleton key={i} />)}
-             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <PokemonCardSkeleton key={i} />
+              ))}
+            </div>
           ) : (
             <>
-              {activeTab === "party" && (
-                teamLoading ? <Spinner /> : 
-                <PokemonGrid 
-                  pokemonList={enrichedTeam} 
-                  onPokemonClick={handleOpenDetails} 
-                  emptyMessage="Party is empty."
-                />
-              )}
+              {activeTab === "party" &&
+                (enrichedTeamState.isLoading ? (
+                  <Spinner />
+                ) : (
+                  <PokemonGrid
+                    pokemonList={enrichedTeamState.data ?? []}
+                    onPokemonClick={handleOpenDetails}
+                    emptyMessage="Party is empty."
+                  />
+                ))}
 
-              {activeTab === "daycare" && (
-                daycareLoading ? <Spinner /> :
-                <PokemonGrid 
-                  pokemonList={enrichedDaycare} 
-                  onPokemonClick={handleOpenDetails}
-                  emptyMessage="Daycare is empty."
-                />
-              )}
+              {activeTab === "daycare" &&
+                (enrichedDaycareState.isLoading ? (
+                  <Spinner />
+                ) : (
+                  <PokemonGrid
+                    pokemonList={enrichedDaycareState.data ?? []}
+                    onPokemonClick={handleOpenDetails}
+                    emptyMessage="Daycare is empty."
+                  />
+                ))}
 
               {activeTab === "pc" && (
-                <PcBoxViewer 
-                  pcQueryData={pcQuery.data} 
-                  onOpenDetails={handleOpenDetails} 
+                <PcBoxViewer
+                  pcQueryData={pcQuery.data}
+                  onOpenDetails={handleOpenDetails}
                 />
               )}
             </>
@@ -134,7 +170,7 @@ export default function Page() {
           setDetailsOpen(open);
           if (!open) setSelected(null);
         }}
-        pokemon={selected} 
+        pokemon={selected}
       />
     </div>
   );
