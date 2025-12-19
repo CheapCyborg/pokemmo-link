@@ -1,6 +1,7 @@
 // app/api/move/[id]/route.ts
+import { CONFIG } from "@/lib/constants/config";
 import type { PokeApiMove, PokemonType } from "@/types/pokemon";
-import { POKEMON_TYPES } from "@/types/pokemon";
+import { PokeApiMoveSchema, POKEMON_TYPES } from "@/types/pokemon";
 import { NextResponse } from "next/server";
 
 const revalidate = 60 * 60 * 24; // 24h
@@ -25,7 +26,7 @@ export async function GET(
 ) {
   const { id } = await ctx.params;
 
-  const res = await fetch(`https://pokeapi.co/api/v2/move/${id}`, {
+  const res = await fetch(`${CONFIG.api.pokeapiUrl}/move/${id}`, {
     next: { revalidate },
   });
 
@@ -57,5 +58,7 @@ export async function GET(
     description,
   };
 
-  return NextResponse.json(response);
+  // Validate before returning
+  const validated = PokeApiMoveSchema.parse(response);
+  return NextResponse.json(validated);
 }

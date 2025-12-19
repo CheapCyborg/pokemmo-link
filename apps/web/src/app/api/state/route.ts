@@ -1,5 +1,9 @@
 import type { ContainerType, DumpEnvelope } from "@/types/pokemon";
-import { CONTAINER_TYPES } from "@/types/pokemon";
+import {
+  CONTAINER_TYPES,
+  DumpEnvelopeSchema,
+  PcDumpEnvelopeSchema,
+} from "@/types/pokemon";
 import fs from "fs/promises";
 import { NextResponse } from "next/server";
 import path from "path";
@@ -21,8 +25,15 @@ export async function GET(request: Request) {
 
     try {
       const fileContent = await fs.readFile(filePath, "utf-8");
-      const data = JSON.parse(fileContent);
-      return NextResponse.json(data);
+      const rawData = JSON.parse(fileContent);
+
+      // Validate based on source type
+      const validated =
+        source === "pc_boxes"
+          ? PcDumpEnvelopeSchema.parse(rawData)
+          : DumpEnvelopeSchema.parse(rawData);
+
+      return NextResponse.json(validated);
     } catch (error: unknown) {
       // If file doesn't exist, return a default empty structure
       if (

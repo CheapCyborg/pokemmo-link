@@ -1,5 +1,6 @@
+import { CONFIG } from "@/lib/constants/config";
 import type { PokeApiSpecies, PokemonType } from "@/types/pokemon";
-import { POKEMON_TYPES } from "@/types/pokemon";
+import { PokeApiSpeciesSchema, POKEMON_TYPES } from "@/types/pokemon";
 import { NextResponse } from "next/server";
 
 const revalidate = 60 * 60 * 24;
@@ -62,7 +63,7 @@ export async function GET(
 
       // Fetch species to find the correct variety
       const speciesRes = await fetch(
-        `https://pokeapi.co/api/v2/pokemon-species/${speciesId}`,
+        `${CONFIG.api.pokeapiUrl}/pokemon-species/${speciesId}`,
         { next: { revalidate } }
       );
 
@@ -95,7 +96,7 @@ export async function GET(
   }
 
   // 2. Fetch Pokemon Data (using the resolved slug or fallback ID)
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${slug}`, {
+  const res = await fetch(`${CONFIG.api.pokeapiUrl}/pokemon/${slug}`, {
     next: { revalidate },
   });
 
@@ -109,7 +110,7 @@ export async function GET(
   let genderRate = -1;
   try {
     const speciesRes = await fetch(
-      `https://pokeapi.co/api/v2/pokemon-species/${json.id}`,
+      `${CONFIG.api.pokeapiUrl}/pokemon-species/${json.id}`,
       { next: { revalidate } }
     );
     if (speciesRes.ok) {
@@ -152,5 +153,7 @@ export async function GET(
     gender_rate: genderRate,
   };
 
-  return NextResponse.json(response);
+  // Validate before returning
+  const validated = PokeApiSpeciesSchema.parse(response);
+  return NextResponse.json(validated);
 }

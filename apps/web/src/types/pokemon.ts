@@ -11,7 +11,14 @@ export const CONTAINER_IDS = {
 } as const;
 
 // Container types as const array for iteration and Zod enum usage
-export const CONTAINER_TYPES = ["party", "daycare", "pc_boxes"] as const;
+export const CONTAINER_TYPES = [
+  "party",
+  "daycare",
+  "pc_boxes",
+  "pc_box",
+  "account_box",
+  "pc_box_extra",
+] as const;
 export type ContainerType = (typeof CONTAINER_TYPES)[number];
 
 // Stat names
@@ -108,9 +115,9 @@ export const PokeDumpMonSchema = z.object({
     nickname: z.string(),
     ot_name: z.string(),
     personality_value: z.number().int(),
-    shiny: z.boolean(),
-    is_gift: z.boolean(),
-    is_alpha: z.boolean(),
+    shiny: z.boolean().optional().default(false),
+    is_gift: z.boolean().optional().default(false),
+    is_alpha: z.boolean().optional().default(false),
   }),
   state: z.object({
     level: z.number().int().min(1).max(100),
@@ -130,8 +137,8 @@ export const PokeDumpMonSchema = z.object({
     })
   ),
   ability: z.object({
-    id: z.number().int().nullable(),
-    slot: z.number().int().nullable(),
+    id: z.number().int().nullable().optional().default(null),
+    slot: z.number().int().nullable().optional().default(null),
   }),
   pokeapi_override: z.string().nullable().optional(),
 });
