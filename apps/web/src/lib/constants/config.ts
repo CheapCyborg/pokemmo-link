@@ -40,7 +40,8 @@ export const CONFIG = {
     },
   },
   queryKeys: {
-    liveData: (source: string) => ["live-data", source] as const,
+    liveData: (source: string, userId?: string) =>
+      userId ? (["live-data", source, userId] as const) : (["live-data", source] as const),
     pokemonSpecies: (id: string | number) => ["pokemon-species", id] as const,
     move: (id: number) => ["move", id] as const,
     ability: (id: number) => ["ability", id] as const,
