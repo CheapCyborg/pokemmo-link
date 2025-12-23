@@ -1,0 +1,28 @@
+{
+  "debug": {
+    "logLevel": "INFO",
+    "logAllPackets": true,
+    "dumpPacketFields": true,
+    "discoveryMode": true,
+    "verboseDiscovery": true,
+    "logToFile": true,
+    "peekMonCount": 8
+  },
+  "handlers": {
+    "enabled": ["pokemon"],
+    "pokemonPacketClass": "f.FQ0",
+    "handlePacketMethod": "yk0"
+  },
+  "network": {
+    "nextJsUrl": "http://localhost:3000",
+    "ingestEndpoint": "/api/ingest",
+    "timeout": 5000,
+    "retryAttempts": 3
+  },
+  "output": {
+    "path": "D:\\Projects\\pokemmo-link\\apps\\agent\\output",
+    "useAbsolutePath": true,
+    "absolutePath": "D:\\Projects\\pokemmo-link\\apps\\agent\\output"
+  },
+  "fieldMappings": {}
+}

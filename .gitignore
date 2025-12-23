@@ -88,3 +88,9 @@ nbdist/
 .DS_Store
 
 ./libs/
+
+.github/
+.serena/
+
+apps/agent/output/
+

@@ -45,4 +45,7 @@ val runSnooper = tasks.register<JavaExec>("runSnooper") {
         ?: System.getenv("POKEMMO_PATH")
         ?: "C:\\Program Files\\PokeMMO"
     workingDir = file(pokemmoPath)
+
+    // Pass project directory as system property so output files go to project
+    systemProperty("project.dir", project.projectDir.absolutePath)
 }
