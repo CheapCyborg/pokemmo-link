@@ -1,34 +1,14 @@
 "use client";
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { usePokeApiAbility } from "@/hooks/usePokeApi";
 import { imageCache } from "@/lib/imageCache";
-import { getSpriteUrl, toTitleCase } from "@/lib/poke";
-import { getLevelProgress, getXpForLevel } from "@/lib/xp";
+import { toTitleCase } from "@/lib/pokemon/enrichment";
+import { getLevelProgress, getXpForLevel } from "@/lib/pokemon/xp";
 import type { EnrichedPokemon } from "@/types/pokemon";
-import {
-  Activity,
-  Flame,
-  Heart,
-  Mars,
-  Sparkles,
-  Swords,
-  Venus,
-  Volume2,
-} from "lucide-react";
+import { Activity, Flame, Heart, Mars, Sparkles, Swords, Venus, Volume2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { NatureBadge } from "./NatureBadge";
@@ -42,64 +22,34 @@ interface PokemonDetailsModalProps {
   pokemon: EnrichedPokemon | null | undefined;
 }
 
-export function PokemonDetailsModal({
-  open,
-  onOpenChange,
-  pokemon,
-}: PokemonDetailsModalProps) {
+export function PokemonDetailsModal({ open, onOpenChange, pokemon }: PokemonDetailsModalProps) {
+  // Zero logic - ALL values pre-computed
   const types = pokemon?.species?.types || [];
   const isShiny = pokemon?.identity.is_shiny;
   const isAlpha = pokemon?.identity.is_alpha;
+  const displayName = pokemon?.computed.displayName || "";
+  const hasNickname = pokemon?.computed.hasNickname || false;
+  const abilityDescription = pokemon?.activeAbility?.description;
 
-  // Fetch ability description
-  const abilityQuery = usePokeApiAbility(pokemon?.activeAbility?.id);
-  const abilityDescription = (abilityQuery as any)?.data?.description;
-
-  // Display name logic
-  const nickname = pokemon?.identity.nickname?.trim();
-  const hasNickname = nickname && !nickname.startsWith("Species ");
-  const displayName = hasNickname
-    ? nickname
-    : pokemon?.species?.displayName ||
-      `Species ${pokemon?.identity.species_id}`;
-
-  // Image logic
-  const animatedUrl = isShiny
-    ? pokemon?.species?.sprites?.animated_shiny
-    : pokemon?.species?.sprites?.animated;
-
-  const staticUrl = isShiny
-    ? pokemon?.species?.sprites?.front_shiny ||
-      (pokemon ? getSpriteUrl(pokemon.identity.species_id, true) : "")
-    : pokemon?.species?.sprites?.front_default ||
-      (pokemon ? getSpriteUrl(pokemon.identity.species_id, false) : "");
-
-  const getInitialImage = () => {
-    if (animatedUrl && !imageCache.isBroken(animatedUrl)) {
-      return animatedUrl;
-    }
-    return staticUrl;
-  };
-
-  const [modalImgSrc, setModalImgSrc] = useState<string>(getInitialImage());
+  // Sprite - pre-computed with fallbacks already handled
+  const preferredSprite = pokemon?.computed.preferredSprite || "";
+  const [modalImgSrc, setModalImgSrc] = useState<string>(preferredSprite);
 
   useEffect(() => {
-    setModalImgSrc(getInitialImage());
-  }, [pokemon, animatedUrl, staticUrl]);
+    setModalImgSrc(preferredSprite);
+  }, [preferredSprite]);
 
+  // Audio playback
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
   const playCry = () => {
-    if (!pokemon) return;
+    if (!pokemon?.computed.cryUrl) return;
 
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
 
-    const audio = new Audio(
-      `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemon.identity.species_id}.ogg`
-    );
+    const audio = new Audio(pokemon.computed.cryUrl);
     audio.volume = 0.5;
     audioRef.current = audio;
     audio.play().catch((e) => console.error("Failed to play cry", e));
@@ -125,27 +75,16 @@ export function PokemonDetailsModal({
                   isAlpha ? "drop-shadow-[0_0_8px_rgba(220,38,38,0.7)]" : ""
                 }`}
                 onError={() => {
-                  if (modalImgSrc === animatedUrl && animatedUrl) {
-                    imageCache.reportError(animatedUrl);
-                    setModalImgSrc(staticUrl);
-                  } else if (modalImgSrc !== staticUrl) {
-                    setModalImgSrc(staticUrl);
+                  const fallbackSprite = pokemon.computed.staticUrl;
+                  if (modalImgSrc !== fallbackSprite) {
+                    imageCache.reportError(modalImgSrc);
+                    setModalImgSrc(fallbackSprite);
                   }
                 }}
               />
               <div className="absolute -top-1 -right-1 flex flex-col gap-1 items-end">
-                {isAlpha && (
-                  <Flame
-                    className="w-5 h-5 text-red-500 fill-red-500"
-                    aria-label="Alpha"
-                  />
-                )}
-                {isShiny && (
-                  <Sparkles
-                    className="w-5 h-5 text-yellow-500 fill-yellow-500"
-                    aria-label="Shiny"
-                  />
-                )}
+                {isAlpha && <Flame className="w-5 h-5 text-red-500 fill-red-500" aria-label="Alpha" />}
+                {isShiny && <Sparkles className="w-5 h-5 text-yellow-500 fill-yellow-500" aria-label="Shiny" />}
               </div>
             </div>
 
@@ -153,12 +92,10 @@ export function PokemonDetailsModal({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
                 <span className="font-mono text-slate-400 dark:text-slate-500 text-sm font-bold">
-                  #{String(pokemon.identity.species_id).padStart(3, "0")}
+                  {pokemon.computed.dexNum}
                 </span>
                 <DialogTitle asChild>
-                  <h2 className="text-2xl font-extrabold truncate">
-                    {displayName}
-                  </h2>
+                  <h2 className="text-2xl font-extrabold truncate">{displayName}</h2>
                 </DialogTitle>
                 <button
                   onClick={playCry}
@@ -177,11 +114,9 @@ export function PokemonDetailsModal({
                 <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold">
                   Lv {pokemon.state.level}
                 </span>
-                {pokemon.state.current_hp !== null &&
-                pokemon.computed?.calculatedStats.hp ? (
+                {pokemon.state.current_hp !== null && pokemon.computed?.calculatedStats.hp ? (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-[10px] font-bold">
-                    HP {pokemon.state.current_hp}/
-                    {pokemon.computed.calculatedStats.hp}
+                    HP {pokemon.state.current_hp}/{pokemon.computed.calculatedStats.hp}
                   </span>
                 ) : null}
                 {pokemon.computed?.gender && (
@@ -189,21 +124,17 @@ export function PokemonDetailsModal({
                     {pokemon.computed.gender === "female" ? (
                       <>
                         <Venus className="w-3 h-3 text-pink-500" />
-                        <span className="text-[10px] font-bold text-pink-600 dark:text-pink-400">
-                          Female
-                        </span>
+                        <span className="text-[10px] font-bold text-pink-600 dark:text-pink-400">Female</span>
                       </>
                     ) : (
                       <>
                         <Mars className="w-3 h-3 text-blue-500" />
-                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
-                          Male
-                        </span>
+                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Male</span>
                       </>
                     )}
                   </span>
                 )}
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800/50">
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800/50">
                   <Heart className="w-3 h-3 text-pink-500 fill-pink-500" />
                   <span className="text-[10px] font-bold text-pink-700 dark:text-pink-400">
                     {pokemon.state.happiness ?? "-"}
@@ -216,8 +147,7 @@ export function PokemonDetailsModal({
                 {hasNickname && (
                   <div>
                     <span className="font-medium">
-                      {pokemon.species?.displayName ||
-                        `Species ${pokemon.identity.species_id}`}
+                      {pokemon.species?.displayName || `Species ${pokemon.identity.species_id}`}
                     </span>
                   </div>
                 )}
@@ -285,18 +215,14 @@ export function PokemonDetailsModal({
                               To Next:{" "}
                               <strong className="text-slate-700 dark:text-slate-200">
                                 {(
-                                  getXpForLevel(
-                                    pokemon.state.level + 1,
-                                    pokemon.species?.growth_rate || undefined
-                                  ) - pokemon.state.xp
+                                  getXpForLevel(pokemon.state.level + 1, pokemon.species?.growth_rate || undefined) -
+                                  pokemon.state.xp
                                 ).toLocaleString()}
                               </strong>
                             </span>
                           )}
                           {pokemon.state.level >= 100 && (
-                            <span className="text-amber-600 dark:text-amber-500 font-bold">
-                              MAX
-                            </span>
+                            <span className="text-amber-600 dark:text-amber-500 font-bold">MAX</span>
                           )}
                         </div>
                       </div>
@@ -314,9 +240,7 @@ export function PokemonDetailsModal({
                     <div className="flex items-center gap-2">
                       <Swords className="w-4 h-4 text-red-500" />
                       <span className="font-bold">Moves</span>
-                      <span className="text-xs text-slate-500">
-                        ({pokemon.movesData?.length || 0}/4)
-                      </span>
+                      <span className="text-xs text-slate-500">({pokemon.movesData?.length || 0}/4)</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4 pt-2">
@@ -328,9 +252,7 @@ export function PokemonDetailsModal({
                             className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-sm">
-                                  {toTitleCase(move.name)}
-                                </span>
+                                <span className="font-bold text-sm">{toTitleCase(move.name)}</span>
                                 <TypeBadge type={move.type as any} size="xs" />
                               </div>
                               {move.pp && (
@@ -349,9 +271,7 @@ export function PokemonDetailsModal({
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-slate-500 italic">
-                        No move data available
-                      </p>
+                      <p className="text-sm text-slate-500 italic">No move data available</p>
                     )}
                   </AccordionContent>
                 </AccordionItem>
@@ -405,8 +325,7 @@ export function PokemonDetailsModal({
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {pokemon.species.abilities.map((a) => {
-                            const isActive =
-                              pokemon.activeAbility?.name === a.name;
+                            const isActive = pokemon.activeAbility?.name === a.name;
                             return (
                               <div
                                 key={a.name}
@@ -436,9 +355,7 @@ export function PokemonDetailsModal({
                   <AccordionTrigger className="px-4 py-3 hover:no-underline">
                     <div className="flex items-center gap-2">
                       <span className="font-bold">Evolution & Breeding</span>
-                      <span className="text-xs text-slate-400">
-                        (Coming Soon)
-                      </span>
+                      <span className="text-xs text-slate-400">(Coming Soon)</span>
                     </div>
                   </AccordionTrigger>
                 </AccordionItem>
@@ -453,9 +370,7 @@ export function PokemonDetailsModal({
                   <AccordionTrigger className="px-4 py-3 hover:no-underline">
                     <div className="flex items-center gap-2">
                       <span className="font-bold">Wild Locations</span>
-                      <span className="text-xs text-slate-400">
-                        (Coming Soon)
-                      </span>
+                      <span className="text-xs text-slate-400">(Coming Soon)</span>
                     </div>
                   </AccordionTrigger>
                 </AccordionItem>

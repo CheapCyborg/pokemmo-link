@@ -1,16 +1,12 @@
 "use client";
 import { StatRow } from "@/components/pokemon/StatRow";
-import { NATURE_MULTIPLIERS } from "@/lib/poke";
+import { NATURE_MULTIPLIERS } from "@/lib/pokemon/enrichment";
 import type { EnrichedPokemon } from "@/types/pokemon";
 
 export const PokemonStats = ({ pokemon }: { pokemon: EnrichedPokemon }) => {
   // If species data isn't loaded yet, show a loading state
   if (!pokemon.species || !pokemon.computed) {
-    return (
-      <div className="p-3 text-center text-gray-500">
-        Loading species data...
-      </div>
-    );
+    return <div className="p-3 text-center text-gray-500">Loading species data...</div>;
   }
 
   const { computed } = pokemon;

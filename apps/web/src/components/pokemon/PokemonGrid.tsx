@@ -19,15 +19,13 @@ function PokemonGridComponent({
     return <p className="text-slate-500 text-sm italic">{emptyMessage}</p>;
   }
 
+  // Only render fully enriched Pokemon
+  const enrichedPokemon = pokemonList.filter((p) => p.computed !== undefined);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-      {pokemonList.map((p, idx) => (
-        <PokemonCard
-          key={`${p.identity.uuid}-${idx}`}
-          pokemon={p}
-          onCardClick={onPokemonClick}
-          context={context}
-        />
+      {enrichedPokemon.map((p, idx) => (
+        <PokemonCard key={`${p.identity.uuid}-${idx}`} pokemon={p} onCardClick={onPokemonClick} context={context} />
       ))}
     </div>
   );
