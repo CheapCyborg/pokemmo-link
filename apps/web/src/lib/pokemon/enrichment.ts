@@ -1,4 +1,3 @@
-// src/lib/poke.ts
 import { CONFIG } from "@/lib/constants/config";
 import type {
   EnrichedMove,
@@ -10,16 +9,12 @@ import type {
   PokeDumpMon,
 } from "@/types/pokemon";
 
-// ... [Keep toTitleCase, getPokeApiSlug, NATURE_MULTIPLIERS, calculateStat, calculateGender helpers] ...
 export const toTitleCase = (s: string) =>
-  (s || "")
-    .replace(/(^|\s|[-_])\w/g, (m) => m.toUpperCase())
-    .replace(/[-_]/g, " ");
+  (s || "").replace(/(^|\s|[-_])\w/g, (m) => m.toUpperCase()).replace(/[-_]/g, " ");
 
 export const getPokeApiSlug = (p: PokeDumpMon) => {
   if (p.pokeapi_override) return String(p.pokeapi_override).trim();
-  if (p.identity.form_id && p.identity.form_id > 0)
-    return `id-${p.identity.species_id}-form-${p.identity.form_id}`;
+  if (p.identity.form_id && p.identity.form_id > 0) return `id-${p.identity.species_id}-form-${p.identity.form_id}`;
   return String(p.identity.species_id);
 };
 
@@ -61,23 +56,15 @@ export const calculateStat = (
 ) => {
   if (statName === "hp") {
     if (base === 1) return 1;
-    return (
-      Math.floor(((2 * base + iv + Math.floor(ev / 4)) * level) / 100) +
-      level +
-      10
-    );
+    return Math.floor(((2 * base + iv + Math.floor(ev / 4)) * level) / 100) + level + 10;
   }
   const nature = NATURE_MULTIPLIERS[natureName] || {};
   const multiplier = nature[statName] || 1.0;
-  const raw =
-    Math.floor(((2 * base + iv + Math.floor(ev / 4)) * level) / 100) + 5;
+  const raw = Math.floor(((2 * base + iv + Math.floor(ev / 4)) * level) / 100) + 5;
   return Math.floor(raw * multiplier);
 };
 
-export const calculateGender = (
-  personalityValue: number,
-  genderRatio: number
-): Gender => {
+export const calculateGender = (personalityValue: number, genderRatio: number): Gender => {
   if (genderRatio === -1) return "genderless";
   if (genderRatio === 0) return "male";
   if (genderRatio === 8) return "female";
@@ -106,7 +93,8 @@ export const getSpriteUrl = (speciesId: number, isShiny = false) => {
 export const enrichPokemon = (
   pokemon: PokeDumpMon,
   apiData?: PokeApiSpecies,
-  moveCache?: Record<string | number, PokeApiMove>
+  moveCache?: Record<string | number, PokeApiMove>,
+  abilityCache?: Record<number, { description: string | null }>
 ): EnrichedPokemon => {
   if (!apiData) {
     return pokemon as EnrichedPokemon;
@@ -173,32 +161,21 @@ export const enrichPokemon = (
     ),
   };
 
-  const gender = calculateGender(
-    pokemon.identity.personality_value,
-    apiData.gender_rate
-  );
+  const gender = calculateGender(pokemon.identity.personality_value, apiData.gender_rate);
 
   // SPRITE SELECTION LOGIC
   const isShiny = pokemon.identity.is_shiny;
 
   // Calculate specific URLs for the current state (Shiny or Normal)
   const currentStaticUrl = isShiny
-    ? apiData.sprites.front_shiny ||
-      getSpriteUrl(pokemon.identity.species_id, true)
-    : apiData.sprites.front_default ||
-      getSpriteUrl(pokemon.identity.species_id, false);
+    ? apiData.sprites.front_shiny || getSpriteUrl(pokemon.identity.species_id, true)
+    : apiData.sprites.front_default || getSpriteUrl(pokemon.identity.species_id, false);
 
-  const currentAnimatedUrl = isShiny
-    ? apiData.sprites.animated_shiny
-    : apiData.sprites.animated;
+  const currentAnimatedUrl = isShiny ? apiData.sprites.animated_shiny : apiData.sprites.animated;
 
   // Calculate fallback URLs for the object (so we have everything)
-  const baseStaticUrl =
-    apiData.sprites.front_default ||
-    getSpriteUrl(pokemon.identity.species_id, false);
-  const shinyStaticUrl =
-    apiData.sprites.front_shiny ||
-    getSpriteUrl(pokemon.identity.species_id, true);
+  const baseStaticUrl = apiData.sprites.front_default || getSpriteUrl(pokemon.identity.species_id, false);
+  const shinyStaticUrl = apiData.sprites.front_shiny || getSpriteUrl(pokemon.identity.species_id, true);
 
   // RESOLVE MOVES
   const movesData: EnrichedMove[] = [];
@@ -212,9 +189,7 @@ export const enrichPokemon = (
   }
 
   // RESOLVE ACTIVE ABILITY
-  let activeAbility:
-    | { name: string; isHidden: boolean; slot: number; id?: number }
-    | undefined;
+  let activeAbility: { name: string; isHidden: boolean; slot: number; id?: number; description?: string } | undefined;
   const abilityId = pokemon.ability?.id;
   const abilitySlot = pokemon.ability?.slot;
 
@@ -232,6 +207,7 @@ export const enrichPokemon = (
         isHidden: found.is_hidden,
         slot: found.slot,
         id: abilityId,
+        description: abilityCache?.[abilityId]?.description ?? undefined,
       };
     }
   }
@@ -247,15 +223,42 @@ export const enrichPokemon = (
         isHidden: found.is_hidden,
         slot: found.slot,
         id: id || undefined,
+        description: (id && abilityCache?.[id]?.description) || undefined,
       };
     }
   }
+
+  // Compute display helpers
+  const nickname = pokemon.identity.nickname?.trim();
+  const hasNickname = Boolean(nickname && !nickname.startsWith("Species "));
+  const speciesName = toTitleCase(apiData.name);
+  const displayName = hasNickname ? nickname! : speciesName || `Species ${pokemon.identity.species_id}`;
+  const showSpeciesName = hasNickname && speciesName !== displayName;
+  const dexNum = `#${String(pokemon.identity.species_id).padStart(3, "0")}`;
+  const animatedUrl = currentAnimatedUrl;
+  const staticUrl = currentStaticUrl;
+  const preferredSprite = currentAnimatedUrl || currentStaticUrl;
+  const cryUrl = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${pokemon.identity.species_id}.ogg`;
+
+  // Compute IV/EV stats
+  const perfectIvCount = Object.values(pokemon.stats.ivs).filter((iv) => iv === 31).length;
+  const totalIvSum = Object.values(pokemon.stats.ivs).reduce((sum, iv) => sum + iv, 0);
+  const totalEvSum = Object.values(pokemon.stats.evs).reduce((sum, ev) => sum + ev, 0);
+
+  // Compute HP display values
+  const currentHp = pokemon.state.current_hp ?? calculatedStats.hp;
+  const maxHp = calculatedStats.hp;
+  const hpPercent = maxHp > 0 ? Math.round((currentHp / maxHp) * 100) : 0;
+  const hpColor = hpPercent > 50 ? "green" : hpPercent > 20 ? "yellow" : "red";
+  const hpColorClass = hpColor === "red" ? "bg-red-500" : hpColor === "yellow" ? "bg-yellow-500" : "bg-green-500";
 
   return {
     ...pokemon,
     movesData,
     activeAbility,
     species: {
+      height: 0, // TODO: Add height to PokeAPI response
+      weight: 0, // TODO: Add weight to PokeAPI response
       name: apiData.name,
       displayName: toTitleCase(apiData.name),
       // SMART SPRITE: The main 'sprite' field used by UI
@@ -281,6 +284,21 @@ export const enrichPokemon = (
     computed: {
       gender,
       calculatedStats,
+      displayName,
+      hasNickname,
+      speciesName,
+      showSpeciesName,
+      dexNum,
+      animatedUrl,
+      staticUrl,
+      preferredSprite,
+      cryUrl,
+      perfectIvCount,
+      totalIvSum,
+      totalEvSum,
+      hpPercent,
+      hpColor,
+      hpColorClass,
     },
   };
 };

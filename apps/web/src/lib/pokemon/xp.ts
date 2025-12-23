@@ -1,10 +1,4 @@
-export type GrowthRate =
-  | "erratic"
-  | "fast"
-  | "medium"
-  | "medium-slow"
-  | "slow"
-  | "fluctuating";
+export type GrowthRate = "erratic" | "fast" | "medium" | "medium-slow" | "slow" | "fluctuating";
 
 /**
  * Calculates the total XP required to reach a specific level based on growth rate.
@@ -47,23 +41,13 @@ export function getXpForLevel(level: number, rate: string | undefined): number {
   }
 }
 
-const GROWTH_RATES: GrowthRate[] = [
-  "erratic",
-  "fast",
-  "medium",
-  "medium-slow",
-  "slow",
-  "fluctuating",
-];
+const GROWTH_RATES: GrowthRate[] = ["erratic", "fast", "medium", "medium-slow", "slow", "fluctuating"];
 
 /**
  * Attempts to detect the growth rate based on current level and XP.
  * Returns the rate that makes the most sense (where current XP is within the level's bounds).
  */
-export function detectGrowthRate(
-  level: number,
-  xp: number
-): string | undefined {
+export function detectGrowthRate(level: number, xp: number): string | undefined {
   if (level >= 100) return "medium"; // Doesn't matter at max level
 
   // Find a rate where getXpForLevel(level) <= xp < getXpForLevel(level + 1)
@@ -99,19 +83,12 @@ export function detectGrowthRate(
  * Calculates the progress percentage towards the next level.
  * Returns a value between 0 and 100.
  */
-export function getLevelProgress(
-  currentXp: number,
-  currentLevel: number,
-  rate: string | undefined
-): number {
+export function getLevelProgress(currentXp: number, currentLevel: number, rate: string | undefined): number {
   if (currentLevel >= 100) return 100;
 
   // Auto-detect rate if missing or if the provided rate seems wrong (currentXp < startXp)
   let effectiveRate = rate;
-  if (
-    !effectiveRate ||
-    currentXp < getXpForLevel(currentLevel, effectiveRate)
-  ) {
+  if (!effectiveRate || currentXp < getXpForLevel(currentLevel, effectiveRate)) {
     effectiveRate = detectGrowthRate(currentLevel, currentXp);
   }
 
