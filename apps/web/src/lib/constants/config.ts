@@ -1,5 +1,6 @@
 export const CONFIG = {
   polling: {
+    enabled: false,
     interval: 3000, // 3 seconds
     staleTime: 200000, // 3 min 20 sec
     retryDelay: 1000, // 1 second base
@@ -32,8 +33,7 @@ export const CONFIG = {
     },
   },
   sprites: {
-    baseUrl:
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon",
+    baseUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon",
     paths: {
       animated: "versions/generation-v/black-white/animated",
       static: "",
@@ -51,6 +51,5 @@ export const CONFIG = {
 // TYPE EXPORTS
 // ============================================================================
 
-export type ContainerCapacity =
-  (typeof CONFIG.containers)[keyof typeof CONFIG.containers];
+export type ContainerCapacity = (typeof CONFIG.containers)[keyof typeof CONFIG.containers];
 export type PollingConfig = typeof CONFIG.polling;
