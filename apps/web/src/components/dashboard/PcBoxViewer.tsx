@@ -75,7 +75,7 @@ function PcBoxViewerComponent({
                 key={key}
                 onClick={() => setActiveBox(key)}
                 className={`
-                  px-3 py-1.5 text-xs font-bold rounded-lg whitespace-nowrap transition-colors
+                  px-3 py-1.5 text-xs font-bold rounded-lg whitespace-nowrap transition-colors cursor-pointer
                   ${
                     isActive
                       ? "bg-indigo-600 text-white shadow-sm"

@@ -38,7 +38,7 @@ export const DashboardHeader = ({
 
         <button
           onClick={onRefresh}
-          className="p-2 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+          className="p-2 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
           title="Refresh Data">
           <RefreshCw size={16} />
         </button>

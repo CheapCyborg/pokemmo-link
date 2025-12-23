@@ -61,7 +61,7 @@ export const DashboardSidebar = ({
         <button
           onClick={() => setActiveTab("party")}
           className={[
-            "relative w-full px-4 py-3 text-left font-bold text-xs flex items-center transition-colors",
+            "relative w-full px-4 py-3 text-left font-bold text-xs flex items-center transition-colors cursor-pointer",
             "rounded-t-xl", // keeps top corners rounded
             activeTab === "party"
               ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-indigo-600 dark:before:bg-indigo-400 before:rounded-tl-xl"
@@ -73,7 +73,7 @@ export const DashboardSidebar = ({
         <button
           onClick={() => setActiveTab("daycare")}
           className={[
-            "relative w-full px-4 py-3 text-left font-bold text-xs flex items-center transition-colors",
+            "relative w-full px-4 py-3 text-left font-bold text-xs flex items-center transition-colors cursor-pointer",
             "border-t border-slate-100 dark:border-slate-700",
             activeTab === "daycare"
               ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-indigo-600 dark:before:bg-indigo-400"
@@ -85,7 +85,7 @@ export const DashboardSidebar = ({
         <button
           onClick={() => setActiveTab("pc")}
           className={[
-            "relative w-full px-4 py-3 text-left font-bold text-xs flex items-center transition-colors",
+            "relative w-full px-4 py-3 text-left font-bold text-xs flex items-center transition-colors cursor-pointer",
             "rounded-b-xl border-t border-slate-100 dark:border-slate-700", // keeps bottom corners rounded
             activeTab === "pc"
               ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-indigo-600 dark:before:bg-indigo-400 before:rounded-bl-xl"

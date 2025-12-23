@@ -119,10 +119,10 @@ const PokemonCardComponent = ({
       onClick={() => onCardClick(pokemon)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`text-left w-full h-full group will-change-transform ${className || ""}`}
+      className={`text-left w-full h-full group will-change-transform cursor-pointer ${className || ""}`}
       {...rest}>
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-md dark:shadow-slate-950/50 border border-gray-200 dark:border-slate-700 overflow-hidden group-hover:shadow-xl dark:group-hover:shadow-slate-900/80 group-hover:border-indigo-500/50 dark:group-hover:border-indigo-400/50 transition-all duration-300 flex flex-col h-full">
-        <div className="p-2 flex flex-auto items-center gap-2 bg-linear-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 border-b border-gray-100 dark:border-slate-700 relative group-hover:from-indigo-50/50 group-hover:to-indigo-100/50 dark:group-hover:from-slate-800 dark:group-hover:to-slate-800 transition-colors duration-300">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-md dark:shadow-slate-950/50 border border-gray-200 dark:border-slate-700 overflow-hidden group-hover:shadow-2xl group-hover:shadow-indigo-500/20 dark:group-hover:shadow-indigo-500/30 group-hover:border-indigo-400 dark:group-hover:border-indigo-500 group-hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
+        <div className="p-2 flex flex-auto items-center gap-2 bg-linear-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 border-b border-gray-100 dark:border-slate-700 relative group-hover:from-indigo-100 group-hover:to-indigo-50 dark:group-hover:from-indigo-950/40 dark:group-hover:to-slate-800 transition-colors duration-300">
           <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
             <div className="text-[10px] font-mono bg-slate-900/85 dark:bg-slate-100/90 text-white dark:text-slate-900 rounded-md px-2 py-0.5 font-bold shadow-sm leading-none">
               {dexNum}
@@ -149,7 +149,7 @@ const PokemonCardComponent = ({
             )}
           </div>
           {/* Left Column: Image */}
-          <div className="shrink-0 flex items-center justify-center pt-4">
+          <div className="shrink-0 flex items-center justify-center pl-1 pt-6">
             <Image
               src={imgSrc}
               alt={displayName}
@@ -171,10 +171,10 @@ const PokemonCardComponent = ({
           </div>
 
           {/* Right Column: Info */}
-          <div className="grow min-w-0 flex flex-col justify-between">
+          <div className="grow min-w-0 flex flex-col justify-between self-start">
             <div>
               {/* Header: Level/IV */}
-              <div className="flex justify-end items-center mb-0.5">
+              <div className="flex justify-end items-start mb-0.5">
                 {context === "daycare" && (
                   <span className="text-[9px] font-bold text-indigo-500 bg-indigo-50 dark:bg-indigo-950/30 px-1.5 py-0.5 rounded-full mr-auto ml-0">
                     {DAYCARE_REGIONS.find(
@@ -182,7 +182,7 @@ const PokemonCardComponent = ({
                     )?.name || "Unknown"}
                   </span>
                 )}
-                <div className="flex gap-1 items-center">
+                <div className="flex flex-col gap-1 items-end">
                   <div className="bg-indigo-600 dark:bg-indigo-500 text-white text-[10px] px-2 py-0.5 rounded-md font-bold shadow-sm leading-none">
                     Lv {pokemon.state.level}
                   </div>

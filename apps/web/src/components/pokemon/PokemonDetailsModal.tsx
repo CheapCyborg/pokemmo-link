@@ -162,7 +162,7 @@ export function PokemonDetailsModal({
                 </DialogTitle>
                 <button
                   onClick={playCry}
-                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
                   title="Play Cry">
                   <Volume2 className="w-4 h-4" />
                 </button>
