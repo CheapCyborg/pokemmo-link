@@ -88,7 +88,7 @@ export const PokemonApi = {
 
       const map: Record<number, PokeApiMove> = {};
       results.forEach((result, index) => {
-        if (result.status === "fulfilled") {
+        if (result.status === "fulfilled" && moveIds[index] !== undefined) {
           map[moveIds[index]] = result.value;
         }
       });
@@ -112,7 +112,7 @@ export const PokemonApi = {
 
       const map: Record<number, PokeApiAbility> = {};
       results.forEach((result, index) => {
-        if (result.status === "fulfilled") {
+        if (result.status === "fulfilled" && abilityIds[index] !== undefined) {
           map[abilityIds[index]] = result.value;
         }
       });
