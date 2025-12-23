@@ -1,8 +1,19 @@
 import { z } from "zod";
+import {
+  AgentDataSchema,
+  CONTAINER_TYPES,
+  NATURES,
+  PokeApiAbilitySchema,
+  PokeApiMoveSchema,
+  PokeApiSpeciesSchema,
+  POKEMON_TYPES,
+} from "./schemas";
 
 // ============================================================================
-// CONSTANTS (Must be defined before schemas to use in validation)
+// CONSTANTS - Re-exported for convenience
 // ============================================================================
+
+export { CONTAINER_TYPES, NATURES, POKEMON_TYPES };
 
 export const CONTAINER_IDS = {
   PARTY_IDS: [1, 2],
@@ -10,308 +21,175 @@ export const CONTAINER_IDS = {
   PC_BOX_START: 100,
 } as const;
 
-// Container types as const array for iteration and Zod enum usage
-export const CONTAINER_TYPES = [
-  "party",
-  "daycare",
-  "pc_boxes",
-  "pc_box",
-  "account_box",
-  "pc_box_extra",
-] as const;
-export type ContainerType = (typeof CONTAINER_TYPES)[number];
-
-// Stat names
 export const STAT_NAMES = ["hp", "atk", "def", "spa", "spd", "spe"] as const;
-export type StatName = (typeof STAT_NAMES)[number];
 
-// Pokemon types (all 18 types)
-export const POKEMON_TYPES = [
-  "normal",
-  "fire",
-  "water",
-  "grass",
-  "electric",
-  "ice",
-  "fighting",
-  "poison",
-  "ground",
-  "flying",
-  "psychic",
-  "bug",
-  "rock",
-  "ghost",
-  "dragon",
-  "dark",
-  "steel",
-  "fairy",
-] as const;
-export type PokemonType = (typeof POKEMON_TYPES)[number];
+export const STATUS_CONDITIONS = ["healthy", "poisoned", "burned", "frozen", "paralyzed", "asleep"] as const;
 
-// Status conditions
-export const STATUS_CONDITIONS = [
-  "healthy",
-  "poisoned",
-  "burned",
-  "frozen",
-  "paralyzed",
-  "asleep",
-] as const;
-export type StatusCondition = (typeof STATUS_CONDITIONS)[number];
-
-// All 25 Pokemon natures
-export const NATURES = [
-  "Adamant",
-  "Bashful",
-  "Bold",
-  "Brave",
-  "Calm",
-  "Careful",
-  "Docile",
-  "Gentle",
-  "Hardy",
-  "Hasty",
-  "Impish",
-  "Jolly",
-  "Lax",
-  "Lonely",
-  "Mild",
-  "Modest",
-  "Naive",
-  "Naughty",
-  "Quiet",
-  "Quirky",
-  "Rash",
-  "Relaxed",
-  "Sassy",
-  "Serious",
-  "Timid",
-] as const;
-export type Nature = (typeof NATURES)[number];
-
-// Gender values
 export const GENDERS = ["male", "female", "genderless"] as const;
+
+// ============================================================================
+// TYPES - Simple TypeScript interfaces (no unnecessary validation)
+// ============================================================================
+
+// Const array-derived types
+export type ContainerType = (typeof CONTAINER_TYPES)[number];
+export type StatName = (typeof STAT_NAMES)[number];
+export type PokemonType = (typeof POKEMON_TYPES)[number];
+export type StatusCondition = (typeof STATUS_CONDITIONS)[number];
+export type Nature = (typeof NATURES)[number];
 export type Gender = (typeof GENDERS)[number];
 
-// ============================================================================
-// ZOD SCHEMAS (Runtime Validation)
-// ============================================================================
+// Core data types (from agent)
+export interface StatBlock {
+  hp: number;
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+}
 
-export const StatBlockSchema = z.object({
-  hp: z.number().int().min(0),
-  atk: z.number().int().min(0),
-  def: z.number().int().min(0),
-  spa: z.number().int().min(0),
-  spd: z.number().int().min(0),
-  spe: z.number().int().min(0),
-});
+export interface PokeDumpMon {
+  slot: number;
+  box_id?: string; // For PC boxes: "box_1", "account_box", "extra_box_1", etc.
+  box_slot?: number; // For PC boxes: slot within the box (0-59)
+  identity: {
+    uuid: number | string;
+    species_id: number;
+    form_id: number | null;
+    nickname: string;
+    ot_name: string;
+    personality_value: number;
+    is_shiny?: boolean;
+    is_gift?: boolean;
+    is_alpha?: boolean;
+  };
+  state: {
+    level: number;
+    nature: Nature;
+    current_hp: number | null;
+    xp: number | null;
+    happiness: number | null;
+  };
+  stats: {
+    evs: StatBlock;
+    ivs: StatBlock;
+  };
+  moves: Array<{
+    move_id: number;
+    pp: number | null;
+  }>;
+  ability: {
+    id?: number | null;
+    slot?: number | null;
+  };
+  pokeapi_override?: string | null;
+}
 
-export const PokeDumpMonSchema = z.object({
-  slot: z.number().int(),
-  identity: z.object({
-    uuid: z.union([z.number(), z.string()]),
-    species_id: z.number().int().min(1),
-    form_id: z.number().int().nullable(),
-    nickname: z.string(),
-    ot_name: z.string(),
-    personality_value: z.number().int(),
-    is_shiny: z.boolean().optional().default(false),
-    is_gift: z.boolean().optional().default(false),
-    is_alpha: z.boolean().optional().default(false),
-  }),
-  state: z.object({
-    level: z.number().int().min(1).max(100),
-    nature: z.enum(NATURES),
-    current_hp: z.number().int().min(0).nullable(),
-    xp: z.number().int().nullable(),
-    happiness: z.number().int().min(0).max(255).nullable(),
-  }),
-  stats: z.object({
-    evs: StatBlockSchema,
-    ivs: StatBlockSchema,
-  }),
-  moves: z.array(
-    z.object({
-      move_id: z.number().int(),
-      pp: z.number().int().min(0).nullable(),
-    })
-  ),
-  ability: z.object({
-    id: z.number().int().nullable().optional().default(null),
-    slot: z.number().int().nullable().optional().default(null),
-  }),
-  pokeapi_override: z.string().nullable().optional(),
-});
+// Unified envelope - all containers return pokemon array
+// For PC boxes, Pokemon include box_id and box_slot metadata
+export interface DumpEnvelope {
+  schema_version: number;
+  captured_at_ms: number;
+  source: {
+    packet_class: string;
+    container_id: number;
+    container_type: ContainerType;
+    capacity?: number;
+  };
+  pokemon: PokeDumpMon[];
+}
 
-export const DumpEnvelopeSchema = z.object({
-  schema_version: z.number().int(),
-  captured_at_ms: z.number().int(),
-  source: z.object({
-    packet_class: z.string(),
-    container_id: z.number().int(),
-    container_type: z.enum(CONTAINER_TYPES),
-    capacity: z.number().int().optional(),
-  }),
-  pokemon: z.array(PokeDumpMonSchema),
-});
-
-export const PcDumpEnvelopeSchema = z.object({
-  source: z.object({
-    container_type: z.literal("pc_boxes"),
-  }),
-  boxes: z.record(z.string(), DumpEnvelopeSchema),
-});
-
-// ============================================================================
-// TYPESCRIPT TYPES (Derived from Schemas)
-// ============================================================================
-
-export type StatBlock = z.infer<typeof StatBlockSchema>;
-export type PokeDumpMon = z.infer<typeof PokeDumpMonSchema>;
-export type DumpEnvelope = z.infer<typeof DumpEnvelopeSchema>;
-export type PcDumpEnvelope = z.infer<typeof PcDumpEnvelopeSchema>;
-
-// ============================================================================
-// HELPER TYPES FOR REFACTORING
-// ============================================================================
-
-/**
- * Standard shape for React Query-based hooks that manage async data.
- * Provides consistent loading/error/empty states across all data-fetching hooks.
- *
- * @example
- * ```ts
- * export function usePokemonData(source: ContainerType): DataState<DumpEnvelope> {
- *   const query = useQuery({ ... });
- *   return {
- *     data: query.data,
- *     isLoading: query.isLoading,
- *     isError: query.isError,
- *     error: query.error,
- *     isEmpty: !query.data || query.data.pokemon.length === 0,
- *     hasData: Boolean(query.data),
- *     refetch: () => query.refetch(),
- *   };
- * }
- * ```
- */
-export type DataState<T> = {
-  data: T | undefined;
-  isLoading: boolean;
-  isError: boolean;
-  error: Error | null;
-  isEmpty: boolean;
-  hasData: boolean;
-  refetch: () => void;
-};
-
-/**
- * Standard shape for composable hooks following the state/actions pattern.
- * Use this when creating domain or UI hooks that encapsulate both state and actions.
- *
- * @example
- * ```ts
- * // Define hook return type
- * export function usePokemonModal(): ComposableHook<
- *   { isOpen: boolean; selectedPokemon: EnrichedPokemon | null },
- *   { open: (p: EnrichedPokemon) => void; close: () => void }
- * > {
- *   // ... implementation
- *   return { state: { isOpen, selectedPokemon }, actions: { open, close } };
- * }
- * ```
- */
-export type ComposableHook<TState, TActions = {}> = {
-  state: TState;
-  actions: TActions;
-};
-
-// ============================================================================
-// API / CACHE TYPES
-// ============================================================================
-
-// PokeAPI enrichment data from /api/pokemon/[slug]
-export const PokeApiSpeciesSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  sprites: z.object({
-    front_default: z.string().nullable(),
-    front_shiny: z.string().nullable(),
-    animated: z.string().nullable(),
-    animated_shiny: z.string().nullable(),
-  }),
-  stats: z.record(z.string(), z.number()),
-  types: z.array(z.enum(POKEMON_TYPES)),
-  abilities: z.array(
-    z.object({
-      ability: z.object({ name: z.string(), url: z.string() }),
-      is_hidden: z.boolean(),
-      slot: z.number(),
-    })
-  ),
-  gender_rate: z.number(),
-  growth_rate: z.string().nullable().optional(),
-});
-
+// PokeAPI types (validated at API boundaries)
 export type PokeApiSpecies = z.infer<typeof PokeApiSpeciesSchema>;
-
-// PokeAPI move data from /api/move/[id]
-export const PokeApiMoveSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  type: z.enum(POKEMON_TYPES).nullable(),
-  power: z.number().nullable(),
-  accuracy: z.number().nullable(),
-  pp: z.number().nullable(),
-  damage_class: z.string().nullable(),
-  description: z.string().nullable(),
-});
-
 export type PokeApiMove = z.infer<typeof PokeApiMoveSchema>;
-
-// PokeAPI ability data from /api/ability/[id]
-export const PokeApiAbilitySchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  description: z.string().nullable(),
-});
-
 export type PokeApiAbility = z.infer<typeof PokeApiAbilitySchema>;
 
-// Grouped schema exports for convenience
-export const SCHEMAS = {
-  statBlock: StatBlockSchema,
-  pokemon: PokeDumpMonSchema,
-  dump: DumpEnvelopeSchema,
-  pcDump: PcDumpEnvelopeSchema,
-  api: {
-    species: PokeApiSpeciesSchema,
-    move: PokeApiMoveSchema,
-    ability: PokeApiAbilitySchema,
-  },
-} as const;
+// ============================================================================
+// RAW POKEAPI RESPONSES - Used by API routes before transformation
+// ============================================================================
 
-// --- Enriched Types ---
+export interface PokeApiMoveResponse {
+  id: number;
+  name: string;
+  accuracy?: number | null;
+  power?: number | null;
+  pp?: number | null;
+  type?: { name: string };
+  damage_class?: { name: string };
+  flavor_text_entries?: Array<{
+    flavor_text: string;
+    language: { name: string };
+  }>;
+}
 
-export type PokemonAbility = {
+export interface PokeApiAbilityResponse {
+  id: number;
+  name: string;
+  flavor_text_entries?: Array<{
+    flavor_text: string;
+    language: { name: string };
+  }>;
+}
+
+export interface PokeApiPokemonResponse {
+  id: number;
+  name: string;
+  sprites?: {
+    front_default?: string | null;
+    front_shiny?: string | null;
+    other?: unknown;
+    versions?: {
+      "generation-v"?: {
+        "black-white"?: {
+          animated?: {
+            front_default?: string | null;
+            front_shiny?: string | null;
+          };
+        };
+      };
+    };
+  };
+  stats?: Array<{ stat?: { name?: string }; base_stat: number }>;
+  types?: Array<{ type?: { name?: string } }>;
+  abilities?: Array<{
+    ability: { name: string; url: string };
+    is_hidden: boolean;
+    slot: number;
+  }>;
+}
+
+export interface PokeApiSpeciesResponse {
+  gender_rate: number;
+  growth_rate?: { name: string; url: string };
+  varieties?: Array<{
+    pokemon?: { name?: string };
+  }>;
+}
+
+// ============================================================================
+// ENRICHMENT TYPES - Computed client-side
+// ============================================================================
+
+export interface PokemonAbility {
   name: string;
   isHidden: boolean;
   slot: number;
   id?: number;
-};
+  description?: string;
+}
 
-// Helper for the UI to display moves easily
 export type EnrichedMove = PokeApiMove & {
   pp_left: number | null;
 };
 
-export type EnrichedPokemon = PokeDumpMon & {
+export interface EnrichedPokemon extends PokeDumpMon {
   species?: {
     height: number;
     weight: number;
     name: string;
     displayName: string;
-    sprite: string; // Context-aware main sprite (Shiny/Normal)
+    sprite: string;
     sprites: {
       front_default: string | null;
       front_shiny: string | null;
@@ -324,15 +202,40 @@ export type EnrichedPokemon = PokeDumpMon & {
     abilities: PokemonAbility[];
     growth_rate: string | null;
   };
-
-  // The specific ability this Pokemon has
   activeAbility?: PokemonAbility;
-
-  // Pre-fetched move data
   movesData?: EnrichedMove[];
-
-  computed?: {
+  computed: {
+    // Game mechanics
     gender: Gender;
     calculatedStats: StatBlock;
+
+    // Display properties - ALL pre-computed, NO fallbacks needed in UI
+    displayName: string; // Nickname or species name
+    hasNickname: boolean;
+    speciesName: string; // Always the species name
+    showSpeciesName: boolean; // Show species when nicknamed
+    dexNum: string; // "#001" formatted
+
+    // Sprites - ALL URLs pre-computed
+    animatedUrl: string | null; // Respects shiny state
+    staticUrl: string; // Respects shiny state, always has fallback
+    preferredSprite: string; // Best available sprite
+    cryUrl: string;
+
+    // Stats
+    perfectIvCount: number; // Count of 31 IVs
+    totalIvSum: number; // Sum of all IVs
+    totalEvSum: number; // Sum of all EVs
+
+    // HP
+    hpPercent: number; // 0-100
+    hpColor: "red" | "yellow" | "green";
+    hpColorClass: string; // Tailwind class
   };
-};
+}
+
+// ============================================================================
+// SCHEMA EXPORTS - Only for API validation
+// ============================================================================
+
+export { AgentDataSchema, PokeApiAbilitySchema, PokeApiMoveSchema, PokeApiSpeciesSchema };
