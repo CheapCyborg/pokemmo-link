@@ -110,8 +110,12 @@ val DAYCARE_REGION_CAPACITY = 26
 object SnooperHelper {
     val gson = Gson()
 
-    // In-memory cache for PC boxes to avoid reading from disk (fresh session)
-    var sessionPcData: MutableMap<String, PokemonDumpSchema.DumpEnvelope> = mutableMapOf()
+    // In-memory accumulator for PC boxes (multiple packets)
+    // Maps boxId -> List of Pokemon in that box
+    var pcBoxAccumulator: MutableMap<String, MutableList<PokemonDumpSchema.PokemonRecord>> =
+            mutableMapOf()
+    var lastPcPacketTime: Long = 0L
+    private const val PC_PACKET_TIMEOUT_MS = 5000L // Reset if no packets for 5 seconds
 
     // Load configuration at startup
     private val config = ConfigManager.get()
@@ -127,16 +131,18 @@ object SnooperHelper {
             connection.readTimeout = config.network.timeout
 
             val jsonData = gson.toJson(payload)
-            connection.outputStream.use { os ->
-                os.write(jsonData.toByteArray(Charsets.UTF_8))
-            }
+            connection.outputStream.use { os -> os.write(jsonData.toByteArray(Charsets.UTF_8)) }
 
             if (connection.responseCode == 200) {
-                val containerType = when (payload) {
-                    is PokemonDumpSchema.DumpEnvelope -> payload.source.containerType
-                    is Map<*, *> -> (payload["source"] as? Map<*, *>)?.get("container_type")?.toString()
-                    else -> null
-                }
+                val containerType =
+                        when (payload) {
+                            is PokemonDumpSchema.DumpEnvelope -> payload.source.containerType
+                            is Map<*, *> ->
+                                    (payload["source"] as? Map<*, *>)
+                                            ?.get("container_type")
+                                            ?.toString()
+                            else -> null
+                        }
                 Logger.info("Synced to Next.js" + (containerType?.let { " ($it)" } ?: ""), "API")
             } else {
                 Logger.warn("Next.js returned HTTP ${connection.responseCode}", "API")
@@ -164,18 +170,23 @@ object SnooperHelper {
                             val value = field.get(o)
                             sb.append("$prefix${field.name} (${field.type.simpleName}) = $value\n")
 
-                            if (value != null && !field.type.isPrimitive &&
-                                field.type != String::class.java &&
-                                !field.type.name.startsWith("java.") &&
-                                prefix.length < 20
+                            if (value != null &&
+                                            !field.type.isPrimitive &&
+                                            field.type != String::class.java &&
+                                            !field.type.name.startsWith("java.") &&
+                                            prefix.length < 20
                             ) {
-                                sb.append("$prefix  >>> Expanding ${field.name} (${field.type.simpleName}):\n")
+                                sb.append(
+                                        "$prefix  >>> Expanding ${field.name} (${field.type.simpleName}):\n"
+                                )
                                 dumpObj(value, "$prefix    ")
                             }
 
                             if (value != null && field.type.isArray && prefix.length < 20) {
                                 val len = java.lang.reflect.Array.getLength(value)
-                                sb.append("$prefix  >>> Expanding Array ${field.name} (len=$len):\n")
+                                sb.append(
+                                        "$prefix  >>> Expanding Array ${field.name} (len=$len):\n"
+                                )
                                 val componentType = field.type.componentType
                                 for (i in 0 until minOf(len, 10)) {
                                     val item = java.lang.reflect.Array.get(value, i)
@@ -203,17 +214,19 @@ object SnooperHelper {
         }
     }
 
-    private fun anyToInt(v: Any?): Int? = when (v) {
-        is Int -> v
-        is Number -> v.toInt()
-        else -> null
-    }
+    private fun anyToInt(v: Any?): Int? =
+            when (v) {
+                is Int -> v
+                is Number -> v.toInt()
+                else -> null
+            }
 
-    private fun anyToLong(v: Any?): Long? = when (v) {
-        is Long -> v
-        is Number -> v.toLong()
-        else -> null
-    }
+    private fun anyToLong(v: Any?): Long? =
+            when (v) {
+                is Long -> v
+                is Number -> v.toLong()
+                else -> null
+            }
 
     fun debugPacket(packet: Any) {
         val cls = packet.javaClass.name
@@ -228,8 +241,10 @@ object SnooperHelper {
         if (!config.debug.dumpPacketFields && !config.debug.discoveryMode) {
             // Quick summary mode
             val pokemonArray = getFieldValue(packet, PARTY_ARRAY_FIELD)
-            val length = if (pokemonArray != null && pokemonArray.javaClass.isArray)
-                java.lang.reflect.Array.getLength(pokemonArray) else -1
+            val length =
+                    if (pokemonArray != null && pokemonArray.javaClass.isArray)
+                            java.lang.reflect.Array.getLength(pokemonArray)
+                    else -1
 
             var hbRaw = -1
             var cap = -1
@@ -239,8 +254,14 @@ object SnooperHelper {
                     val slotWrapper = java.lang.reflect.Array.get(pokemonArray, i) ?: continue
                     val pokemon = getFieldValue(slotWrapper, WRAPPER_FIELD_POKEMON) ?: continue
                     val containerInfo = getFieldValue(pokemon, FIELD_CONTAINER_INFO) ?: continue
-                    hbRaw = (getFieldValue(containerInfo, FIELD_CONTAINER_ID_REAL) as? Number)?.toInt() ?: hbRaw
-                    cap = (getFieldValue(containerInfo, FIELD_CONTAINER_CAPACITY) as? Number)?.toInt() ?: cap
+                    hbRaw =
+                            (getFieldValue(containerInfo, FIELD_CONTAINER_ID_REAL) as? Number)
+                                    ?.toInt()
+                                    ?: hbRaw
+                    cap =
+                            (getFieldValue(containerInfo, FIELD_CONTAINER_CAPACITY) as? Number)
+                                    ?.toInt()
+                                    ?: cap
                     break
                 }
             }
@@ -255,11 +276,12 @@ object SnooperHelper {
                     val pokemon = getFieldValue(slotWrapper, WRAPPER_FIELD_POKEMON) ?: continue
 
                     val speciesObj = getFieldValue(pokemon, FIELD_SPECIES_ID)
-                    val speciesId = when (speciesObj) {
-                        is Int -> speciesObj
-                        is Short -> speciesObj.toInt()
-                        else -> continue
-                    }
+                    val speciesId =
+                            when (speciesObj) {
+                                is Int -> speciesObj
+                                is Short -> speciesObj.toInt()
+                                else -> continue
+                            }
 
                     val ch1 = (getFieldValue(pokemon, FIELD_SLOT_INDEX_REAL) as? Number)?.toInt()
                     Logger.debug("  mon[$i]: species=$speciesId, Ch1=$ch1", "Packet")
@@ -273,20 +295,24 @@ object SnooperHelper {
         }
     }
 
-    private fun boxKeyRank(key: String): Pair<Int, Int> = when {
-        key.startsWith("box_") -> 0 to (key.removePrefix("box_").toIntOrNull() ?: Int.MAX_VALUE)
-        key == "account_box" -> 1 to 0
-        key.startsWith("extra_box_") -> 2 to (key.removePrefix("extra_box_").toIntOrNull() ?: Int.MAX_VALUE)
-        else -> 3 to Int.MAX_VALUE
-    }
+    private fun boxKeyRank(key: String): Pair<Int, Int> =
+            when {
+                key.startsWith("box_") ->
+                        0 to (key.removePrefix("box_").toIntOrNull() ?: Int.MAX_VALUE)
+                key == "account_box" -> 1 to 0
+                key.startsWith("extra_box_") ->
+                        2 to (key.removePrefix("extra_box_").toIntOrNull() ?: Int.MAX_VALUE)
+                else -> 3 to Int.MAX_VALUE
+            }
 
     private fun <T> orderedByBoxKey(map: Map<String, T>): LinkedHashMap<String, T> {
         val ordered = LinkedHashMap<String, T>()
-        val keys = map.keys.sortedWith(
-            compareBy<String> { boxKeyRank(it).first }
-                .thenBy { boxKeyRank(it).second }
-                .thenBy { it }
-        )
+        val keys =
+                map.keys.sortedWith(
+                        compareBy<String> { boxKeyRank(it).first }
+                                .thenBy { boxKeyRank(it).second }
+                                .thenBy { it }
+                )
         for (k in keys) ordered[k] = map.getValue(k)
         return ordered
     }
@@ -321,8 +347,14 @@ object SnooperHelper {
                     if (hbRaw == -1 || containerCapacity == -1) {
                         val containerInfo = getFieldValue(pokemon, FIELD_CONTAINER_INFO)
                         if (containerInfo != null) {
-                            val cap = (getFieldValue(containerInfo, FIELD_CONTAINER_CAPACITY) as? Number)?.toInt()
-                            val realHb = (getFieldValue(containerInfo, FIELD_CONTAINER_ID_REAL) as? Number)?.toInt()
+                            val cap =
+                                    (getFieldValue(containerInfo, FIELD_CONTAINER_CAPACITY) as?
+                                                    Number)
+                                            ?.toInt()
+                            val realHb =
+                                    (getFieldValue(containerInfo, FIELD_CONTAINER_ID_REAL) as?
+                                                    Number)
+                                            ?.toInt()
                             if (cap != null) containerCapacity = cap
                             if (realHb != null) hbRaw = realHb
                         }
@@ -343,7 +375,8 @@ object SnooperHelper {
                         // Extract Ability List from Species Data (in wrapper)
                         val speciesData = getFieldValue(slotWrapper, WRAPPER_FIELD_SPECIES_DATA)
                         if (speciesData != null) {
-                            val abilityList = parseIntArray(getFieldValue(speciesData, FIELD_ABILITY_LIST))
+                            val abilityList =
+                                    parseIntArray(getFieldValue(speciesData, FIELD_ABILITY_LIST))
                             m["ability_list"] = abilityList
                         }
 
@@ -357,24 +390,28 @@ object SnooperHelper {
                 }
 
                 val isPcStorage =
-                    containerCapacity >= 30 &&
-                            (containerCapacity % 30 == 0) &&
-                            containerCapacity != 6 &&
-                            containerCapacity != DAYCARE_REGION_CAPACITY
+                        containerCapacity >= 30 &&
+                                (containerCapacity % 30 == 0) &&
+                                containerCapacity != 6 &&
+                                containerCapacity != DAYCARE_REGION_CAPACITY
 
                 val isDaycare =
-                    (hbRaw in DAYCARE_CONTAINER_IDS) ||
-                            (containerCapacity == DAYCARE_REGION_CAPACITY) ||
-                            (containerCapacity == 2 || containerCapacity == 3)
+                        (hbRaw in DAYCARE_CONTAINER_IDS) ||
+                                (containerCapacity == DAYCARE_REGION_CAPACITY) ||
+                                (containerCapacity == 2 || containerCapacity == 3)
 
-                val containerType = when {
-                    isPcStorage -> "pc_boxes"
-                    containerCapacity == 6 -> "party"
-                    isDaycare -> "daycare"
-                    else -> "unknown"
-                }
+                val containerType =
+                        when {
+                            isPcStorage -> "pc_boxes"
+                            containerCapacity == 6 -> "party"
+                            isDaycare -> "daycare"
+                            else -> "unknown"
+                        }
 
-                Logger.info("Processing FQ0: hb=$hbRaw, Capacity=$containerCapacity, Type=$containerType, Count=${pokemonList.size}", "Packet")
+                Logger.info(
+                        "Processing FQ0: hb=$hbRaw, Capacity=$containerCapacity, Type=$containerType, Count=${pokemonList.size}",
+                        "Packet"
+                )
 
                 fun resolveSlotIdx(extracted: Map<String, Any?>, fallback: Int, type: String): Int {
                     val ch1 = anyToInt(extracted["slot_index_real"])
@@ -387,164 +424,208 @@ object SnooperHelper {
                     }
                 }
 
-                var records = pokemonList.mapIndexedNotNull { idx, extracted ->
-                    val slotIdx = resolveSlotIdx(extracted, idx, containerType)
+                var records =
+                        pokemonList
+                                .mapIndexedNotNull { idx, extracted ->
+                                    val slotIdx = resolveSlotIdx(extracted, idx, containerType)
 
-                    // Resolve Ability ID if we have the list and slot
-                    val abilityList = extracted["ability_list"] as? IntArray
-                    // Default to -1 to distinguish between "missing" and "0"
-                    val abilitySlot = (extracted["ability_slot"] as? Number)?.toInt() ?: -1
-                    val abilitySlotAlt = (extracted["ability_slot_alt"] as? Number)?.toInt() ?: -1
+                                    // Resolve Ability ID if we have the list and slot
+                                    val abilityList = extracted["ability_list"] as? IntArray
+                                    // Default to -1 to distinguish between "missing" and "0"
+                                    val abilitySlot =
+                                            (extracted["ability_slot"] as? Number)?.toInt() ?: -1
+                                    val abilitySlotAlt =
+                                            (extracted["ability_slot_alt"] as? Number)?.toInt()
+                                                    ?: -1
 
-                    if (abilityList != null && abilitySlot >= 0 && abilitySlot < abilityList.size) {
-                        // abilitySlot is 0-based index into the array
-                        var abId = abilityList[abilitySlot]
-                        // Fallback: If the selected slot is 0 (empty) but we have a primary ability, use that.
-                        // This handles cases like Rotom/Archeops where slot=2 but ability_list=[id, 0, 0]
-                        if (abId == 0 && abilityList.isNotEmpty()) {
-                            abId = abilityList[0]
-                        }
-                        (extracted as MutableMap<String, Any?>)["ability_id"] = abId
+                                    if (abilityList != null &&
+                                                    abilitySlot >= 0 &&
+                                                    abilitySlot < abilityList.size
+                                    ) {
+                                        // abilitySlot is 0-based index into the array
+                                        var abId = abilityList[abilitySlot]
+                                        // Fallback: If the selected slot is 0 (empty) but we have a
+                                        // primary ability, use that.
+                                        // This handles cases like Rotom/Archeops where slot=2 but
+                                        // ability_list=[id, 0, 0]
+                                        if (abId == 0 && abilityList.isNotEmpty()) {
+                                            abId = abilityList[0]
+                                        }
+                                        (extracted as MutableMap<String, Any?>)["ability_id"] = abId
 
-                        // DEBUG LOGGING
-                        val speciesId = extracted["species_id"]
-                        Logger.info("DEBUG ABILITY: Species=$speciesId, Slot=$abilitySlot, AltSlot=$abilitySlotAlt, List=${abilityList.joinToString(",")}, ResolvedID=$abId", "Snooper")
-                    } else if (abilityList != null) {
-                         val speciesId = extracted["species_id"]
-                         Logger.info("DEBUG ABILITY MISSING SLOT: Species=$speciesId, Slot=$abilitySlot, AltSlot=$abilitySlotAlt, List=${abilityList.joinToString(",")}", "Snooper")
-                    }
+                                        // DEBUG LOGGING
+                                        val speciesId = extracted["species_id"]
+                                        Logger.info(
+                                                "DEBUG ABILITY: Species=$speciesId, Slot=$abilitySlot, AltSlot=$abilitySlotAlt, List=${abilityList.joinToString(",")}, ResolvedID=$abId",
+                                                "Snooper"
+                                        )
+                                    } else if (abilityList != null) {
+                                        val speciesId = extracted["species_id"]
+                                        Logger.info(
+                                                "DEBUG ABILITY MISSING SLOT: Species=$speciesId, Slot=$abilitySlot, AltSlot=$abilitySlotAlt, List=${abilityList.joinToString(",")}",
+                                                "Snooper"
+                                        )
+                                    }
 
-                    // ALPHA OVERRIDE: Alphas always have Hidden Ability (usually Slot 3 / Index 2)
-                    // If the game reports Slot 0 for an Alpha, it's likely a bug or visual quirk.
-                    if (extracted["is_alpha"] == true && abilityList != null && abilityList.size >= 3) {
-                        val hiddenId = abilityList[2]
-                        val currentId = (extracted["ability_id"] as? Int) ?: 0
-                        if (currentId != hiddenId) {
-                            (extracted as MutableMap<String, Any?>)["ability_id"] = hiddenId
-                            Logger.info("ALPHA OVERRIDE: Species=${extracted["species_id"]} forced to Hidden Ability ($hiddenId)", "Snooper")
-                        }
-                    }
+                                    // ALPHA OVERRIDE: Alphas always have Hidden Ability (usually
+                                    // Slot 3 / Index 2)
+                                    // If the game reports Slot 0 for an Alpha, it's likely a bug or
+                                    // visual quirk.
+                                    if (extracted["is_alpha"] == true &&
+                                                    abilityList != null &&
+                                                    abilityList.size >= 3
+                                    ) {
+                                        val hiddenId = abilityList[2]
+                                        val currentId = (extracted["ability_id"] as? Int) ?: 0
+                                        if (currentId != hiddenId) {
+                                            (extracted as MutableMap<String, Any?>)["ability_id"] =
+                                                    hiddenId
+                                            Logger.info(
+                                                    "ALPHA OVERRIDE: Species=${extracted["species_id"]} forced to Hidden Ability ($hiddenId)",
+                                                    "Snooper"
+                                            )
+                                        }
+                                    }
 
-                    PokemonDumpSchema.fromExtractedMap(extracted, slotIdx)
-                }.sortedBy { it.slot }
+                                    PokemonDumpSchema.fromExtractedMap(extracted, slotIdx)
+                                }
+                                .sortedBy { it.slot }
 
                 // Write logic based on container type
                 when (containerType) {
                     "party" -> {
-                        val env = PokemonDumpSchema.envelope(
-                            packetClass = packet.javaClass.name,
-                            containerId = hbRaw,
-                            containerType = "party",
-                            records = records
-                        )
+                        val env =
+                                PokemonDumpSchema.envelope(
+                                        packetClass = packet.javaClass.name,
+                                        containerId = hbRaw,
+                                        containerType = "party",
+                                        records = records
+                                )
 
-                        // Always write party dump (assume f.FQ0 is only sent for local player's data)
-                        PokemonDumpSchema.writeEnvelope(ConfigManager.getOutputFile("team_dump.json"), env)
+                        // Always write party dump (assume f.FQ0 is only sent for local player's
+                        // data)
+                        PokemonDumpSchema.writeEnvelope(
+                                ConfigManager.getOutputFile("team_dump.json"),
+                                env
+                        )
                         SnooperHelper.postToNextJs(env)
                     }
-
                     "daycare" -> {
                         val sorted = records.sortedBy { it.slot }
                         records = sorted.mapIndexed { idx, rec -> rec.copy(slot = idx) }
                         val normalizedCapacity = 2.coerceAtLeast(records.size).coerceAtMost(3)
-                        val env = PokemonDumpSchema.envelope(packet.javaClass.name, hbRaw, "daycare", normalizedCapacity, records)
-                        PokemonDumpSchema.writeEnvelope(ConfigManager.getOutputFile("daycare_dump.json"), env)
+                        val env =
+                                PokemonDumpSchema.envelope(
+                                        packet.javaClass.name,
+                                        hbRaw,
+                                        "daycare",
+                                        normalizedCapacity,
+                                        records
+                                )
+                        PokemonDumpSchema.writeEnvelope(
+                                ConfigManager.getOutputFile("daycare_dump.json"),
+                                env
+                        )
                         SnooperHelper.postToNextJs(env)
                     }
-
                     "pc_boxes" -> {
                         val PC_BOX_SIZE = 60
                         val STANDARD_BOX_COUNT = 11
 
-                        fun resolveBoxKeyAndType(boxIndex0: Int): Triple<String, String, Int> = when {
-                            boxIndex0 in 0 until STANDARD_BOX_COUNT -> Triple("box_${boxIndex0 + 1}", "pc_box", boxIndex0 + 1)
-                            boxIndex0 == STANDARD_BOX_COUNT -> Triple("account_box", "account_box", boxIndex0 + 1)
-                            else -> Triple("extra_box_${boxIndex0 + 1}", "pc_box_extra", boxIndex0 + 1)
+                        fun resolveBoxId(boxIndex0: Int): String =
+                                when {
+                                    boxIndex0 in 0 until STANDARD_BOX_COUNT ->
+                                            "box_${boxIndex0 + 1}"
+                                    boxIndex0 == STANDARD_BOX_COUNT -> "account_box"
+                                    else -> "extra_box_${boxIndex0 + 1}"
+                                }
+
+                        // Accumulate Pokemon across multiple packets
+                        val now = System.currentTimeMillis()
+
+                        // Reset accumulator if too much time has passed (new session)
+                        if (now - SnooperHelper.lastPcPacketTime >
+                                        SnooperHelper.PC_PACKET_TIMEOUT_MS
+                        ) {
+                            SnooperHelper.pcBoxAccumulator.clear()
                         }
+                        SnooperHelper.lastPcPacketTime = now
 
-                        val boxGroups = mutableMapOf<String, MutableList<PokemonDumpSchema.PokemonRecord>>()
-                        val emptySlotsByBox = mutableMapOf<String, MutableList<Int>>()
-                        val boxMeta = mutableMapOf<String, Pair<String, Int>>()
-
+                        // Process current packet's records and add to accumulator
                         for (record in records) {
+                            // Skip empty slots (species_id == 0)
+                            if (record.identity.speciesId == 0) continue
+
                             val globalSlot = record.slot
                             val boxIndex0 = globalSlot / PC_BOX_SIZE
                             val slotInBox = globalSlot % PC_BOX_SIZE
-                            val (boxKey, boxType, boxNumericId) = resolveBoxKeyAndType(boxIndex0)
+                            val boxId = resolveBoxId(boxIndex0)
 
-                            // If species_id is 0, it's an empty slot marker
-                            if (record.identity.speciesId == 0) {
-                                emptySlotsByBox.computeIfAbsent(boxKey) { mutableListOf() }.add(slotInBox)
-                            } else {
-                                val updated = record.copy(slot = slotInBox)
-                                boxGroups.computeIfAbsent(boxKey) { mutableListOf() }.add(updated)
-                            }
-                            boxMeta[boxKey] = Pair(boxType, boxNumericId)
-                        }
+                            // Get or create box list
+                            val boxList =
+                                    SnooperHelper.pcBoxAccumulator.getOrPut(boxId) {
+                                        mutableListOf()
+                                    }
 
-                        // Load existing data
-                        // val file = ConfigManager.getOutputFile("dump-pc_boxes.json")
-                        // val typeToken = object : TypeToken<Map<String, Any>>() {}.type
-                        var pcData: MutableMap<String, PokemonDumpSchema.DumpEnvelope> = mutableMapOf()
+                            // Remove existing pokemon at this slot (update)
+                            boxList.removeIf { it.boxSlot == slotInBox }
 
-                        // IN-MEMORY CACHE ONLY (Per User Request)
-                        // We use a static map to persist data across packets within the same session,
-                        // but we DO NOT read from disk. This ensures a "fresh dump" every time the agent starts.
-                        if (SnooperHelper.sessionPcData.isNotEmpty()) {
-                            // Deep copy to avoid mutation issues? No, we just use it.
-                            pcData = SnooperHelper.sessionPcData
-                        }
-
-                        // Process Empty Slots (Clear from Cache)
-                        for ((boxKey, slots) in emptySlotsByBox) {
-                            val boxMap = pcData[boxKey]
-                            if (boxMap != null) {
-                                val mutablePokemon = boxMap.pokemon.toMutableList()
-                                mutablePokemon.removeIf { it.slot in slots }
-                                pcData[boxKey] = boxMap.copy(pokemon = mutablePokemon)
-                            }
-                        }
-
-                        // Process Updates (Add/Update Cache)
-                        for ((boxKey, mons) in boxGroups) {
-                            val (boxType, boxNumericId) = boxMeta.getValue(boxKey)
-
-                            val boxMap = pcData.computeIfAbsent(boxKey) {
-                                PokemonDumpSchema.envelope(packet.javaClass.name, boxNumericId, boxType, PC_BOX_SIZE, emptyList())
-                            }
-
-                            val merged = boxMap.pokemon.toMutableList()
-                            for (newRec in mons) {
-                                merged.removeIf { it.slot == newRec.slot }
-                                merged.add(newRec)
-                            }
-                            pcData[boxKey] = boxMap.copy(
-                                capturedAtMs = System.currentTimeMillis(),
-                                pokemon = merged.sortedBy { it.slot }
+                            // Add with box metadata
+                            boxList.add(
+                                    record.copy(
+                                            slot = slotInBox,
+                                            boxId = boxId,
+                                            boxSlot = slotInBox
+                                    )
                             )
                         }
 
-                        // Update Session Cache
-                        SnooperHelper.sessionPcData = pcData
+                        // Flatten all accumulated boxes into single array
+                        val allPokemon = mutableListOf<PokemonDumpSchema.PokemonRecord>()
+                        for ((_, mons) in SnooperHelper.pcBoxAccumulator) {
+                            allPokemon.addAll(mons)
+                        }
 
-                        val mergedBoxes = orderedByBoxKey(pcData)
-                        val pcPayload = linkedMapOf(
-                            "schema_version" to 2,
-                            "captured_at_ms" to System.currentTimeMillis(),
-                            "source" to linkedMapOf(
-                                "packet_class" to packet.javaClass.name,
-                                "container_type" to "pc_boxes",
-                                "hb_raw" to hbRaw,
-                                "capacity" to containerCapacity,
-                                "slot_strategy" to "Ch1_global"
-                            ),
-                            "boxes" to mergedBoxes
-                        )
+                        // Define box sort order for consistent ordering
+                        fun boxSortKey(boxId: String): Int =
+                                when {
+                                    boxId.startsWith("box_") ->
+                                            boxId.removePrefix("box_").toIntOrNull() ?: 999
+                                    boxId == "account_box" -> STANDARD_BOX_COUNT + 1
+                                    boxId.startsWith("extra_box_") ->
+                                            STANDARD_BOX_COUNT +
+                                                    1 +
+                                                    (boxId.removePrefix("extra_box_").toIntOrNull()
+                                                            ?: 0)
+                                    else -> 9999
+                                }
+
+                        // Sort by box order then slot within box
+                        val sortedPokemon =
+                                allPokemon.sortedWith(
+                                        compareBy(
+                                                { mon -> boxSortKey(mon.boxId ?: "zzz") },
+                                                { it.boxSlot ?: it.slot }
+                                        )
+                                )
+
+                        // Create unified envelope with flattened pokemon array
+                        val env =
+                                PokemonDumpSchema.envelope(
+                                        packetClass = packet.javaClass.name,
+                                        containerId = hbRaw,
+                                        containerType = "pc_boxes",
+                                        capacity = containerCapacity,
+                                        records = sortedPokemon
+                                )
 
                         val outFile = ConfigManager.getOutputFile("dump-pc_boxes.json")
-                        outFile.writeText(SnooperHelper.gson.toJson(pcPayload))
-                        Logger.info("Wrote PC Boxes to ${outFile.path}", "FileIO")
-                        SnooperHelper.postToNextJs(pcPayload)
+                        PokemonDumpSchema.writeEnvelope(outFile, env)
+                        Logger.info(
+                                "Wrote PC Boxes (${sortedPokemon.size} pokemon) to ${outFile.path}",
+                                "FileIO"
+                        )
+                        SnooperHelper.postToNextJs(env)
                     }
                 }
             }
