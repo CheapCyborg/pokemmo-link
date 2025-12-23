@@ -182,7 +182,7 @@ const PokemonCardComponent = ({
                     )?.name || "Unknown"}
                   </span>
                 )}
-                <div className="flex flex-col gap-1 items-end">
+                <div className="flex flex-col gap-1 items-end min-h-[2.5rem]">
                   <div className="bg-indigo-600 dark:bg-indigo-500 text-white text-[10px] px-2 py-0.5 rounded-md font-bold shadow-sm leading-none">
                     Lv {pokemon.state.level}
                   </div>
