@@ -65,6 +65,7 @@ export interface PokeDumpMon {
     is_alpha?: boolean;
   };
   state: {
+    status: any;
     level: number;
     nature: Nature;
     current_hp: number | null;
