@@ -1,17 +1,16 @@
-import { SCHEMAS } from "@/types/pokemon";
+import { AgentDataSchema } from "@/types/pokemon";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import fs from "fs/promises";
 import path from "path";
-import z from "zod";
 
 export async function POST(request: Request) {
   try {
     const rawData = await request.json();
 
-    // Support both standard dumps (party/daycare) and PC box dumps
-    const IngestSchema = z.union([SCHEMAS.dump, SCHEMAS.pcDump]);
-    const validatedData = IngestSchema.parse(rawData);
+    // Validate agent data (handles both dumps and PC boxes)
+    const validatedData = AgentDataSchema.parse(rawData);
 
     const containerType = validatedData.source?.container_type || "unknown";
 
@@ -22,21 +21,14 @@ export async function POST(request: Request) {
     const filename = `dump-${containerType}.json`;
     const filePath = path.join(process.cwd(), "data", filename);
 
-    await fs.writeFile(
-      filePath,
-      JSON.stringify(validatedData, null, 2),
-      "utf-8"
-    );
+    await fs.writeFile(filePath, JSON.stringify(validatedData, null, 2), "utf-8");
     return NextResponse.json({
       success: true,
       message: `Data ingested for ${containerType}`,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      console.error(
-        "Validation Error:",
-        JSON.stringify(error.format(), null, 2)
-      );
+      console.error("Validation Error:", JSON.stringify(error.format(), null, 2));
       return NextResponse.json(
         {
           success: false,
@@ -47,9 +39,6 @@ export async function POST(request: Request) {
       );
     }
     console.error("Error ingesting data:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to ingest data" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: "Failed to ingest data" }, { status: 500 });
   }
 }
