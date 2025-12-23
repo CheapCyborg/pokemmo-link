@@ -9,11 +9,26 @@
           "node_modules/": true
         }
       }
+    },
+    {
+      "name": "Agent (Kotlin)",
+      "path": "apps/agent",
+      "settings": {
+        "java.import.gradle.home": "",
+        "java.import.gradle.enabled": true,
+        "java.import.gradle.wrapper.enabled": true
+      }
+    },
+    {
+      "name": "Web (Next.js)",
+      "path": "apps/web"
     }
   ],
   "extensions": {
     "recommendations": [
       "vscjava.vscode-java-pack",
+      "fwcd.kotlin",
+      "mathiasfrohlich.kotlin",
       "bradlc.vscode-tailwindcss",
       "dbaeumer.vscode-eslint",
       "esbenp.prettier-vscode",
@@ -34,7 +49,27 @@
       "**/.factorypath": true,
       "**/bin": true,
       "**/build": true,
-      "**/.gradle": true
+      "**/.gradle": true,
+      "**/.next": true,
+      "**/node_modules": true,
+      "apps/agent/build": true,
+      "apps/agent/.gradle": true
+    },
+    "search.exclude": {
+      "**/.next": true,
+      "**/node_modules": true,
+      "apps/agent/build": true,
+      "apps/agent/.gradle": true,
+      "apps/web/data/dump-*.json": true
+    },
+    "files.watcherExclude": {
+      "**/.next/**": true,
+      "**/node_modules/**": true,
+      "apps/agent/build/**": true,
+      "apps/agent/.gradle/**": true
+    },
+    "files.associations": {
+      "*.css": "tailwindcss"
     },
     "typescript.tsdk": "node_modules/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true,
@@ -45,12 +80,31 @@
     "typescript.referencesCodeLens.enabled": true,
     "typescript.preferences.useAliasesForRenames": false,
     "javascript.referencesCodeLens.enabled": true,
+    "pokemmo.path": "C:\\Program Files\\PokeMMO",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m -Xlog:disable",
+    "java.import.gradle.enabled": true,
+    "java.import.gradle.wrapper.enabled": true,
+    "kotlin.compiler.jvm.target": "17",
+    "kotlin.languageServer.enabled": true,
+    "kotlin.debugAdapter.enabled": true,
     "editor.codeLens": true,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.wordWrap": "off",
+    "editor.wordWrapColumn": 120,
+    "editor.wrappingIndent": "indent",
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": "active",
+    "editor.linkedEditing": true,
+    "editor.cursorBlinking": "smooth",
+    "editor.cursorSmoothCaretAnimation": "on",
+    "editor.smoothScrolling": true,
+    "editor.stickyScroll.enabled": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
-    },
-    "files.associations": {
-      "*.css": "tailwindcss"
+      "source.organizeImports": "explicit",
+      "source.fixAll.eslint": "explicit"
     },
     "editor.quickSuggestions": {
       "strings": "on"
@@ -58,6 +112,57 @@
     "tailwindCSS.experimental.classRegex": [
       ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
       ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-    ]
+    ],
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+      "*.ts": "${capture}.test.ts, ${capture}.spec.ts",
+      "*.tsx": "${capture}.test.tsx, ${capture}.spec.tsx, ${capture}.module.css",
+      "package.json": "package-lock.json, tsconfig.json, next.config.ts, tailwind.config.ts, postcss.config.mjs, eslint.config.mjs, prettier.config.*, .prettierrc*, .prettierignore, .eslintrc*, .eslintignore",
+      "build.gradle.kts": "settings.gradle.kts, gradle.properties, gradlew, gradlew.bat"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[kotlin]": {
+      "editor.tabSize": 4,
+      "editor.defaultFormatter": "fwcd.kotlin",
+      "editor.formatOnSave": false
+    },
+    "[java]": {
+      "editor.tabSize": 4,
+      "editor.formatOnSave": false
+    },
+    "eslint.workingDirectories": ["apps/web"],
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact"
+    ],
+    "tailwind-fold.autoFold": true,
+    "tailwind-fold.foldStyle": "QUOTES",
+    "tailwind-fold.unfoldIfLineSelected": true,
+    "tailwind-fold.showTailwindImage": true,
+    "tailwind-fold.foldedText": "...",
+    "tailwind-fold.foldedTextColor": "#6366f1",
+    "tailwind-fold.foldedTextBackgroundColor": "#1e293b20",
+    "tailwind-fold.unfoldedTextOpacity": 0.6,
+    "tailwind-fold.supportedLanguages": [
+      "typescriptreact",
+      "javascriptreact",
+      "typescript",
+      "javascript",
+      "html"
+    ],
+    "tailwind-fold.foldLengthThreshold": 60
   }
 }
