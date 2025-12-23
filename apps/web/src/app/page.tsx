@@ -11,54 +11,29 @@ import { PcBoxViewer } from "@/components/dashboard/PcBoxViewer";
 import { PokemonCardSkeleton } from "@/components/pokemon/PokemonCardSkeleton";
 import { PokemonDetailsModal } from "@/components/pokemon/PokemonDetailsModal";
 import { PokemonGrid } from "@/components/pokemon/PokemonGrid";
-import { Spinner } from "@/components/ui/spinner";
 
-import { useEnrichedPokemon } from "@/hooks/useEnrichedPokemon";
-import { useLiveData } from "@/hooks/useLiveData";
+import { usePokemonFlow } from "@/hooks/usePokemonFlow";
 import { getRegionForSlot } from "@/lib/constants/regions";
 
 export default function Page() {
   const [userProfileId] = useState<string>("local-poc");
   const [playerName] = useState<string>("Cyborg");
-  const [activeTab, setActiveTab] = useState<"party" | "daycare" | "pc">(
-    "party"
-  );
+  const [activeTab, setActiveTab] = useState<"party" | "daycare" | "pc">("party");
   const [daycareRegion, setDaycareRegion] = useState<string>("all");
 
-  // Fetch live data
-  const partyQuery = useLiveData("party");
-  const daycareQuery = useLiveData("daycare");
-  const pcQuery = useLiveData("pc_boxes");
-
-  // --- Data Preparation ---
-  const teamData = useMemo(
-    () => [...(partyQuery.data?.pokemon ?? [])].sort((a, b) => a.slot - b.slot),
-    [partyQuery.data?.pokemon]
-  );
-
-  const daycareData = useMemo(
-    () =>
-      [...(daycareQuery.data?.pokemon ?? [])].sort((a, b) => a.slot - b.slot),
-    [daycareQuery.data?.pokemon]
-  );
+  // Use orchestrators for each container - they handle ALL data logic
+  const { state: partyState, actions: partyActions } = usePokemonFlow("party");
+  const { state: daycareState, actions: daycareActions } = usePokemonFlow("daycare");
 
   // Filter daycare by selected region
   const filteredDaycareData = useMemo(() => {
-    if (daycareRegion === "all") return daycareData;
-    return daycareData.filter(
-      (p) => getRegionForSlot(p.slot) === daycareRegion
-    );
-  }, [daycareData, daycareRegion]);
-
-  // --- Enrichment with Loading States ---
-  const enrichedTeamState = useEnrichedPokemon(teamData);
-  const enrichedDaycareState = useEnrichedPokemon(filteredDaycareData);
+    if (daycareRegion === "all") return daycareState.visiblePokemon;
+    return daycareState.visiblePokemon.filter((p) => getRegionForSlot(p.slot) === daycareRegion);
+  }, [daycareState.visiblePokemon, daycareRegion]);
 
   // --- Status ---
-  const isLoading =
-    partyQuery.isLoading || daycareQuery.isLoading || pcQuery.isLoading;
-  const hasData =
-    teamData.length > 0 || daycareData.length > 0 || pcQuery.hasData;
+  const isPending = partyState.flowState === "loading" || daycareState.flowState === "loading";
+  const hasData = partyState.totalCount > 0 || daycareState.totalCount > 0;
 
   // --- Modal Logic ---
   const [selected, setSelected] = useState<EnrichedPokemon | null>(null);
@@ -70,21 +45,18 @@ export default function Page() {
   }, []);
 
   const handleRefresh = useCallback(() => {
-    partyQuery.refetch();
-    daycareQuery.refetch();
-    pcQuery.refetch();
-  }, [partyQuery, daycareQuery, pcQuery]);
+    partyActions.refresh();
+    daycareActions.refresh();
+  }, [partyActions, daycareActions]);
 
   const countPill =
     activeTab === "party"
-      ? `${teamData.length} / 6`
+      ? `${partyState.visiblePokemon.length} / 6`
       : activeTab === "daycare"
         ? daycareRegion === "all"
-          ? `${daycareData.length}`
-          : `${filteredDaycareData.length} / ${daycareData.length}`
-        : pcQuery.hasData
-          ? "Stored"
-          : "0";
+          ? `${daycareState.visiblePokemon.length}`
+          : `${filteredDaycareData.length} / ${daycareState.visiblePokemon.length}`
+        : "PC Boxes";
 
   return (
     <div className="min-h-screen font-sans p-4 md:p-8">
@@ -112,29 +84,16 @@ export default function Page() {
                 placeholder="Search Pokemon..."
                 className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 rounded-lg outline-none text-sm"
               />
-              <Search
-                size={16}
-                className="absolute left-3 top-2.5 text-slate-400"
-              />
+              <Search size={16} className="absolute left-3 top-2.5 text-slate-400" />
             </div>
-            <button
-              onClick={() => {
-                partyQuery.refetch();
-                daycareQuery.refetch();
-                pcQuery.refetch();
-              }}
-              className="p-2 text-slate-400 hover:text-indigo-600 transition">
+            <button onClick={handleRefresh} className="p-2 text-slate-400 hover:text-indigo-600 transition">
               <RefreshCw size={18} />
             </button>
           </div>
 
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">
-              {activeTab === "party"
-                ? "Active Party"
-                : activeTab === "daycare"
-                  ? "Daycare"
-                  : "PC Boxes"}
+              {activeTab === "party" ? "Active Party" : activeTab === "daycare" ? "Daycare" : "PC Boxes"}
             </h2>
             <div className="flex items-center gap-3">
               {activeTab === "daycare" && (
@@ -156,7 +115,7 @@ export default function Page() {
           </div>
 
           {/* Content Area */}
-          {isLoading && !hasData ? (
+          {isPending && !hasData ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {[...Array(6)].map((_, i) => (
                 <PokemonCardSkeleton key={i} />
@@ -164,36 +123,25 @@ export default function Page() {
             </div>
           ) : (
             <>
-              {activeTab === "party" &&
-                (enrichedTeamState.isLoading ? (
-                  <Spinner />
-                ) : (
-                  <PokemonGrid
-                    pokemonList={enrichedTeamState.data ?? []}
-                    onPokemonClick={handleOpenDetails}
-                    emptyMessage="Party is empty."
-                    context="party"
-                  />
-                ))}
-
-              {activeTab === "daycare" &&
-                (enrichedDaycareState.isLoading ? (
-                  <Spinner />
-                ) : (
-                  <PokemonGrid
-                    pokemonList={enrichedDaycareState.data ?? []}
-                    onPokemonClick={handleOpenDetails}
-                    emptyMessage="Daycare is empty."
-                    context="daycare"
-                  />
-                ))}
-
-              {activeTab === "pc" && (
-                <PcBoxViewer
-                  pcQueryData={pcQuery.data}
-                  onOpenDetails={handleOpenDetails}
+              {activeTab === "party" && (
+                <PokemonGrid
+                  pokemonList={partyState.visiblePokemon}
+                  onPokemonClick={handleOpenDetails}
+                  emptyMessage="Party is empty."
+                  context="party"
                 />
               )}
+
+              {activeTab === "daycare" && (
+                <PokemonGrid
+                  pokemonList={filteredDaycareData}
+                  onPokemonClick={handleOpenDetails}
+                  emptyMessage="Daycare is empty."
+                  context="daycare"
+                />
+              )}
+
+              {activeTab === "pc" && <PcBoxViewer onOpenDetails={handleOpenDetails} />}
             </>
           )}
         </div>
