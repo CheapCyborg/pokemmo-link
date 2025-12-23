@@ -1,49 +1,11 @@
 import { CONFIG } from "@/lib/constants/config";
-import type { PokeApiSpecies, PokemonType } from "@/types/pokemon";
-import { PokeApiSpeciesSchema, POKEMON_TYPES } from "@/types/pokemon";
+import type { PokeApiPokemonResponse, PokeApiSpecies, PokeApiSpeciesResponse, PokemonType } from "@/types/pokemon";
+import { PokeApiSpeciesSchema, POKEMON_TYPES } from "@/types/schemas";
 import { NextResponse } from "next/server";
 
 const revalidate = 60 * 60 * 24;
 
-type PokeApiPokemon = {
-  id: number;
-  name: string;
-  sprites?: {
-    front_default?: string | null;
-    front_shiny?: string | null;
-    other?: unknown;
-    versions?: {
-      "generation-v"?: {
-        "black-white"?: {
-          animated?: {
-            front_default?: string | null;
-            front_shiny?: string | null;
-          };
-        };
-      };
-    };
-  };
-  stats?: Array<{ stat?: { name?: string }; base_stat: number }>;
-  types?: Array<{ type?: { name?: string } }>;
-  abilities?: Array<{
-    ability: { name: string; url: string };
-    is_hidden: boolean;
-    slot: number;
-  }>;
-};
-
-type PokeApiSpeciesResponse = {
-  gender_rate: number;
-  growth_rate?: { name: string; url: string };
-  varieties?: Array<{
-    pokemon?: { name?: string };
-  }>;
-};
-
-export async function GET(
-  _req: Request,
-  ctx: { params: Promise<{ slug: string }> }
-) {
+export async function GET(_req: Request, ctx: { params: Promise<{ slug: string }> }) {
   let { slug } = await ctx.params;
   slug = decodeURIComponent(slug);
 
@@ -63,10 +25,7 @@ export async function GET(
       }
 
       // Fetch species to find the correct variety
-      const speciesRes = await fetch(
-        `${CONFIG.api.pokeapiUrl}/pokemon-species/${speciesId}`,
-        { next: { revalidate } }
-      );
+      const speciesRes = await fetch(`${CONFIG.api.pokeapiUrl}/pokemon-species/${speciesId}`, { next: { revalidate } });
 
       if (speciesRes.ok) {
         const speciesData = await speciesRes.json();
@@ -105,17 +64,14 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const json = (await res.json()) as PokeApiPokemon;
+  const json = (await res.json()) as PokeApiPokemonResponse;
 
   // 3. Fetch species data for gender_rate and growth_rate
   let genderRate = -1;
   let growthRate: string | undefined;
 
   try {
-    const speciesRes = await fetch(
-      `${CONFIG.api.pokeapiUrl}/pokemon-species/${json.id}`,
-      { next: { revalidate } }
-    );
+    const speciesRes = await fetch(`${CONFIG.api.pokeapiUrl}/pokemon-species/${json.id}`, { next: { revalidate } });
     if (speciesRes.ok) {
       const speciesData = (await speciesRes.json()) as PokeApiSpeciesResponse;
       genderRate = speciesData.gender_rate ?? -1;
@@ -134,9 +90,7 @@ export async function GET(
   const types = (json.types ?? [])
     .map((t) => t.type?.name)
     .filter((x): x is string => Boolean(x))
-    .filter((typeName): typeName is PokemonType =>
-      POKEMON_TYPES.includes(typeName as PokemonType)
-    );
+    .filter((typeName): typeName is PokemonType => POKEMON_TYPES.includes(typeName as PokemonType));
 
   const response: PokeApiSpecies = {
     id: json.id,
@@ -144,12 +98,8 @@ export async function GET(
     sprites: {
       front_default: json.sprites?.front_default ?? null,
       front_shiny: json.sprites?.front_shiny ?? null,
-      animated:
-        json.sprites?.versions?.["generation-v"]?.["black-white"]?.animated
-          ?.front_default ?? null,
-      animated_shiny:
-        json.sprites?.versions?.["generation-v"]?.["black-white"]?.animated
-          ?.front_shiny ?? null,
+      animated: json.sprites?.versions?.["generation-v"]?.["black-white"]?.animated?.front_default ?? null,
+      animated_shiny: json.sprites?.versions?.["generation-v"]?.["black-white"]?.animated?.front_shiny ?? null,
     },
     stats,
     types,
