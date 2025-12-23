@@ -821,26 +821,31 @@ object RecvInterceptor {
 }
 
 fun initHooks() {
-    Logger.info("Installing ByteBuddy hooks for ALL packets with $HANDLE_PACKET_METHOD_NAME method...")
+    Logger.info(
+            "Installing ByteBuddy hooks for ALL packets with $HANDLE_PACKET_METHOD_NAME method..."
+    )
     ByteBuddyAgent.install()
     AgentBuilder.Default()
-        .with(AgentBuilder.InitializationStrategy.SelfInjection.Eager())
-        .type(ElementMatchers.declaresMethod(ElementMatchers.named(HANDLE_PACKET_METHOD_NAME)))
-        .transform { builder, _, _, _, _ ->
-            builder.method(ElementMatchers.named(HANDLE_PACKET_METHOD_NAME))
-                .intercept(Advice.to(RecvInterceptor::class.java))
-        }
-        .installOnByteBuddyAgent()
-    Logger.info("Hooks installed successfully - intercepting ALL classes with $HANDLE_PACKET_METHOD_NAME", "Snooper")
+            .with(AgentBuilder.InitializationStrategy.SelfInjection.Eager())
+            .type(ElementMatchers.declaresMethod(ElementMatchers.named(HANDLE_PACKET_METHOD_NAME)))
+            .transform { builder, _, _, _, _ ->
+                builder.method(ElementMatchers.named(HANDLE_PACKET_METHOD_NAME))
+                        .intercept(Advice.to(RecvInterceptor::class.java))
+            }
+            .installOnByteBuddyAgent()
+    Logger.info(
+            "Hooks installed successfully - intercepting ALL classes with $HANDLE_PACKET_METHOD_NAME",
+            "Snooper"
+    )
 }
 
 fun main() {
     // Initialize Logger and ConfigManager
     val config = ConfigManager.get()
     Logger.init(
-        level = ConfigManager.getLogLevel(),
-        enableFileLogging = config.debug.logToFile,
-        outputFile = ConfigManager.getOutputFile("snooper.log")
+            level = ConfigManager.getLogLevel(),
+            enableFileLogging = config.debug.logToFile,
+            outputFile = ConfigManager.getOutputFile("snooper.log")
     )
 
     Logger.info("=".repeat(60), "Snooper")
@@ -855,9 +860,13 @@ fun main() {
 
     // Register packet handlers
     if (config.debug.discoveryMode) {
-        val discoveryLogger = PacketDiscoveryLogger(ConfigManager.getOutputFile("packet-discovery.log"))
+        val discoveryLogger =
+                PacketDiscoveryLogger(ConfigManager.getOutputFile("packet-discovery.log"))
         PacketRegistry.register(discoveryLogger)
-        Logger.info("Discovery mode enabled - logging all packets to packet-discovery.log", "Snooper")
+        Logger.info(
+                "Discovery mode enabled - logging all packets to packet-discovery.log",
+                "Snooper"
+        )
     }
 
     // TODO: Register other handlers (Pokemon, Character, Inventory, etc.)
@@ -867,4 +876,3 @@ fun main() {
     initHooks()
     Client.main(emptyArray())
 }
-
