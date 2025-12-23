@@ -111,9 +111,7 @@ export function PokemonDetailsModal({
                     sizes="96px"
                     unoptimized
                     className={`w-16 h-16 object-contain [image-rendering:pixelated] rounded-md ${
-                      isAlpha
-                        ? "drop-shadow-[0_0_8px_rgba(220,38,38,0.7)]"
-                        : ""
+                      isAlpha ? "drop-shadow-[0_0_8px_rgba(220,38,38,0.7)]" : ""
                     }`}
                     onError={() => {
                       if (modalImgSrc === animatedUrl && animatedUrl) {
