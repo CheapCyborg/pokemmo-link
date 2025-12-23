@@ -634,23 +634,21 @@ object SnooperHelper {
         }
     }
 
-    // Removed mergePcBoxes as it is now inlined
-    fun unused_mergePcBoxes(newBoxes: Map<String, PokemonDumpSchema.DumpEnvelope>): Map<String, PokemonDumpSchema.DumpEnvelope> {
-        return emptyMap()
-    }
-
     fun extractPokemonData(pokemon: Any): Map<String, Any?>? {
         try {
             val speciesObj = getFieldValue(pokemon, FIELD_SPECIES_ID)
-            val speciesId = when (speciesObj) {
-                is Int -> speciesObj
-                is Short -> speciesObj.toInt()
-                else -> return null
-            }
+            val speciesId =
+                    when (speciesObj) {
+                        is Int -> speciesObj
+                        is Short -> speciesObj.toInt()
+                        else -> return null
+                    }
 
-            // If speciesId is 0, it's an empty slot. We must return a marker so we can clear it from the cache.
+            // If speciesId is 0, it's an empty slot. We must return a marker so we can clear it
+            // from the cache.
             if (speciesId == 0) {
-                val slotIndexReal = (getFieldValue(pokemon, FIELD_SLOT_INDEX_REAL) as? Number)?.toInt() ?: 0
+                val slotIndexReal =
+                        (getFieldValue(pokemon, FIELD_SLOT_INDEX_REAL) as? Number)?.toInt() ?: 0
                 return mapOf("species_id" to 0, "slot_index_real" to slotIndexReal)
             }
 
@@ -669,26 +667,30 @@ object SnooperHelper {
             }
 
             val uuidWrapper = getFieldValue(pokemon, FIELD_UUID_WRAPPER)
-            val uuid = if (uuidWrapper != null) {
-                anyToLong(getFieldValue(uuidWrapper, FIELD_UUID_VALUE)) ?: 0L
-            } else 0L
+            val uuid =
+                    if (uuidWrapper != null) {
+                        anyToLong(getFieldValue(uuidWrapper, FIELD_UUID_VALUE)) ?: 0L
+                    } else 0L
 
             var name = getFieldValue(pokemon, FIELD_NICKNAME)?.toString()?.trim() ?: ""
             if (name.isEmpty()) name = "Species $speciesId"
 
             val evsArr = parseStatsArray(getFieldValue(pokemon, FIELD_EVS))
-            val evString = "${evsArr[0]}/${evsArr[1]}/${evsArr[2]}/${evsArr[4]}/${evsArr[5]}/${evsArr[3]}"
+            val evString =
+                    "${evsArr[0]}/${evsArr[1]}/${evsArr[2]}/${evsArr[4]}/${evsArr[5]}/${evsArr[3]}"
 
             val packedIvs = (getFieldValue(pokemon, FIELD_IVS_PACKED) as? Number)?.toInt() ?: 0
-            val ivs = mapOf(
-                "hp" to ((packedIvs shr 0) and 31),
-                "attack" to ((packedIvs shr 5) and 31),
-                "defense" to ((packedIvs shr 10) and 31),
-                "speed" to ((packedIvs shr 15) and 31),
-                "special_attack" to ((packedIvs shr 20) and 31),
-                "special_defense" to ((packedIvs shr 25) and 31)
-            )
-            val ivString = "${ivs["hp"]}/${ivs["attack"]}/${ivs["defense"]}/${ivs["special_attack"]}/${ivs["special_defense"]}/${ivs["speed"]}"
+            val ivs =
+                    mapOf(
+                            "hp" to ((packedIvs shr 0) and 31),
+                            "attack" to ((packedIvs shr 5) and 31),
+                            "defense" to ((packedIvs shr 10) and 31),
+                            "speed" to ((packedIvs shr 15) and 31),
+                            "special_attack" to ((packedIvs shr 20) and 31),
+                            "special_defense" to ((packedIvs shr 25) and 31)
+                    )
+            val ivString =
+                    "${ivs["hp"]}/${ivs["attack"]}/${ivs["defense"]}/${ivs["special_attack"]}/${ivs["special_defense"]}/${ivs["speed"]}"
 
             val currentHp = (getFieldValue(pokemon, FIELD_CURRENT_HP) as? Number)?.toInt() ?: 0
             val xp = (getFieldValue(pokemon, FIELD_XP) as? Number)?.toInt() ?: 0
@@ -700,13 +702,16 @@ object SnooperHelper {
             val variant = (getFieldValue(pokemon, FIELD_VARIANT) as? Number)?.toInt() ?: 0
 
             val abilitySlot = (getFieldValue(pokemon, FIELD_ABILITY_SLOT) as? Number)?.toInt() ?: 0
-            val abilitySlotAlt = (getFieldValue(pokemon, FIELD_ABILITY_SLOT_ALT) as? Number)?.toInt() ?: -1
-            val personalityValue = (getFieldValue(pokemon, FIELD_PERSONALITY_VALUE) as? Number)?.toInt() ?: 0
+            val abilitySlotAlt =
+                    (getFieldValue(pokemon, FIELD_ABILITY_SLOT_ALT) as? Number)?.toInt() ?: -1
+            val personalityValue =
+                    (getFieldValue(pokemon, FIELD_PERSONALITY_VALUE) as? Number)?.toInt() ?: 0
             val formId = (getFieldValue(pokemon, FIELD_FORM_ID) as? Number)?.toInt() ?: 0
 
             val moves = parseStatsArray(getFieldValue(pokemon, FIELD_MOVES))
             val pp = parseStatsArray(getFieldValue(pokemon, FIELD_PP))
-            val slotIndexReal = (getFieldValue(pokemon, FIELD_SLOT_INDEX_REAL) as? Number)?.toInt() ?: 0
+            val slotIndexReal =
+                    (getFieldValue(pokemon, FIELD_SLOT_INDEX_REAL) as? Number)?.toInt() ?: 0
 
             val isShiny = variant == 1
 
@@ -717,31 +722,33 @@ object SnooperHelper {
             val isAlpha = variant == 6
 
             return linkedMapOf(
-                "slot_index_real" to slotIndexReal,
-                "name" to name,
-                "species_id" to speciesId,
-                "level" to level,
-                "nature" to nature,
-                "nature_id" to natureId,
-                "ivs" to ivString,
-                "evs" to evString,
-                "original_trainer" to otName,
-                "uuid" to uuid,
-                "current_hp" to currentHp,
-                "xp" to xp,
-                "gender" to gender,
-                "personality_value" to personalityValue,
-                "happiness" to happiness,
-                "is_shiny" to isShiny,
-                "is_gift" to isGift,
-                "is_alpha" to isAlpha,
-                "ability_slot" to abilitySlot,
-                "ability_slot_alt" to abilitySlotAlt,
-                "moves" to moves.toList(),
-                "pp" to pp.toList(),
-                "form_id" to formId
+                    "slot_index_real" to slotIndexReal,
+                    "name" to name,
+                    "species_id" to speciesId,
+                    "level" to level,
+                    "nature" to nature,
+                    "nature_id" to natureId,
+                    "ivs" to ivString,
+                    "evs" to evString,
+                    "original_trainer" to otName,
+                    "uuid" to uuid,
+                    "current_hp" to currentHp,
+                    "xp" to xp,
+                    "gender" to gender,
+                    "personality_value" to personalityValue,
+                    "happiness" to happiness,
+                    "is_shiny" to isShiny,
+                    "is_gift" to isGift,
+                    "is_alpha" to isAlpha,
+                    "ability_slot" to abilitySlot,
+                    "ability_slot_alt" to abilitySlotAlt,
+                    "moves" to moves.toList(),
+                    "pp" to pp.toList(),
+                    "form_id" to formId
             )
-        } catch (_: Exception) { return null }
+        } catch (_: Exception) {
+            return null
+        }
     }
 
     fun parseIntArray(arr: Any?): IntArray {
@@ -789,7 +796,9 @@ object SnooperHelper {
                     val field = clazz.getDeclaredField(fieldName)
                     field.isAccessible = true
                     return field.get(obj)
-                } catch (_: NoSuchFieldException) { clazz = clazz.superclass }
+                } catch (_: NoSuchFieldException) {
+                    clazz = clazz.superclass
+                }
             }
         } catch (_: Exception) {}
         return null
