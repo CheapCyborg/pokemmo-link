@@ -1,4 +1,5 @@
 "use client";
+import { NatureBadge, TypeBadge } from "@/components/common/Badge";
 import { DAYCARE_REGIONS, getRegionForSlot } from "@/lib/constants/regions";
 import { imageCache } from "@/lib/imageCache";
 import { toTitleCase } from "@/lib/pokemon/enrichment";
@@ -8,16 +9,14 @@ import { Flame, Mars, Sparkles, Venus } from "lucide-react";
 import Image from "next/image";
 import type { ComponentPropsWithoutRef } from "react";
 import { memo, useEffect, useRef, useState } from "react";
-import { NatureBadge } from "./NatureBadge";
-import { TypeBadge } from "./TypeBadge";
 
-interface PokemonCardProps extends Omit<ComponentPropsWithoutRef<"button">, "onClick"> {
+interface PokemonCardOldProps extends Omit<ComponentPropsWithoutRef<"button">, "onClick"> {
   pokemon: EnrichedPokemon;
   onCardClick: (pokemon: EnrichedPokemon) => void;
   context?: "party" | "daycare" | "pc";
 }
 
-const PokemonCardComponent = ({ pokemon, onCardClick, className, context, ...rest }: PokemonCardProps) => {
+const PokemonCardComponentOld = ({ pokemon, onCardClick, className, context, ...rest }: PokemonCardOldProps) => {
   // Zero logic - ALL values pre-computed in enrichment
   const displayName = pokemon.computed.displayName;
   const speciesName = pokemon.computed.speciesName;
@@ -107,18 +106,18 @@ const PokemonCardComponent = ({ pokemon, onCardClick, className, context, ...res
             )}
           </div>
           {/* Left Column: Image */}
-          <div className="shrink-0 flex items-center justify-center pl-1 pt-6">
+          <div className="shrink-0 relative w-14 h-14 ml-1 mt-6 flex items-center justify-center">
             <Image
               src={imgSrc}
               alt={displayName}
-              width={56}
-              height={56}
+              fill
               unoptimized
-              className={`[image-rendering:pixelated] transition-transform duration-500 ease-out ${
+              className={`object-contain [image-rendering:pixelated] transition-transform duration-500 ease-out ${
                 isStatic ? "scale-135 group-hover:scale-145" : "scale-125 group-hover:scale-135"
               } ${isAlpha ? "drop-shadow-[0_0_6px_rgba(220,38,38,0.7)]" : "drop-shadow-sm"}`}
               onError={handleError}
               priority={false}
+              sizes="56px"
             />
           </div>
 
@@ -290,7 +289,7 @@ const PokemonCardComponent = ({ pokemon, onCardClick, className, context, ...res
   );
 };
 
-export const PokemonCard = memo(PokemonCardComponent, (prev, next) => {
+export const PokemonCard = memo(PokemonCardComponentOld, (prev, next) => {
   return (
     prev.pokemon.identity.uuid === next.pokemon.identity.uuid &&
     prev.pokemon.state.current_hp === next.pokemon.state.current_hp &&
