@@ -14,6 +14,12 @@ export type FlowState =
 
 interface UsePokemonFlowOptions {
   initialBox?: string;
+  /**
+   * User ID to fetch data for.
+   * Phase 1: Defaults to 'local-poc' (via ViewerContext)
+   * Phase 2+: Pass specific userId to view friend's data
+   */
+  userId?: string;
 }
 
 export interface PokemonFlowState {
@@ -37,15 +43,18 @@ export interface PokemonFlowActions {
  *
  * Implements the Facade pattern to hide complexity from components.
  *
+ * Phase 1: Fetches own data (userId defaults to 'local-poc')
+ * Phase 2+: Can fetch friend's data by passing userId in options
+ *
  * @param source - The container to fetch (party, daycare, pc_boxes)
- * @param options - Configuration options
+ * @param options - Configuration options including optional userId
  */
 export function usePokemonFlow(source: ContainerType, options: UsePokemonFlowOptions = {}) {
   // 1. View State (Managed by the Flow)
   const [activeBoxId, setActiveBoxId] = useState<string>(options.initialBox ?? "box_1");
 
   // 2. Data Provider (Raw Data)
-  const rawQuery = usePokemonData(source);
+  const rawQuery = usePokemonData(source, options.userId);
 
   // 3. Data Orchestration (Decide what to enrich)
   const { visibleRawPokemon, availableBoxes } = useMemo(() => {
