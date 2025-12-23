@@ -1,19 +1,18 @@
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.pokeemu.client.Client
+import core.ConfigManager
+import core.Logger
+import core.PacketRegistry
+import handlers.PacketDiscoveryLogger
 import java.io.File
+import java.lang.reflect.Modifier
 import java.net.HttpURLConnection
 import java.net.URI
+import java.util.LinkedHashMap
 import net.bytebuddy.agent.ByteBuddyAgent
 import net.bytebuddy.agent.builder.AgentBuilder
 import net.bytebuddy.asm.Advice
 import net.bytebuddy.matcher.ElementMatchers
-import java.lang.reflect.Modifier
-import java.util.LinkedHashMap
-import core.Logger
-import core.ConfigManager
-import core.PacketRegistry
-import handlers.PacketDiscoveryLogger
 
 // --- Configuration ---
 val HANDLE_PACKET_METHOD_NAME = "yk0"
@@ -73,13 +72,34 @@ val FIELD_FORM_ID = "Kv"
 val FIELD_PERSONALITY_VALUE = "rC"
 
 // Nature Map
-val NATURE_MAP = mapOf(
-    0 to "Hardy", 1 to "Lonely", 2 to "Brave", 3 to "Adamant", 4 to "Naughty",
-    5 to "Bold", 6 to "Docile", 7 to "Relaxed", 8 to "Impish", 9 to "Lax",
-    10 to "Timid", 11 to "Hasty", 12 to "Serious", 13 to "Jolly", 14 to "Naive",
-    15 to "Modest", 16 to "Mild", 17 to "Quiet", 18 to "Bashful", 19 to "Rash",
-    20 to "Calm", 21 to "Gentle", 22 to "Sassy", 23 to "Careful", 24 to "Quirky"
-)
+val NATURE_MAP =
+        mapOf(
+                0 to "Hardy",
+                1 to "Lonely",
+                2 to "Brave",
+                3 to "Adamant",
+                4 to "Naughty",
+                5 to "Bold",
+                6 to "Docile",
+                7 to "Relaxed",
+                8 to "Impish",
+                9 to "Lax",
+                10 to "Timid",
+                11 to "Hasty",
+                12 to "Serious",
+                13 to "Jolly",
+                14 to "Naive",
+                15 to "Modest",
+                16 to "Mild",
+                17 to "Quiet",
+                18 to "Bashful",
+                19 to "Rash",
+                20 to "Calm",
+                21 to "Gentle",
+                22 to "Sassy",
+                23 to "Careful",
+                24 to "Quirky"
+        )
 
 // Known daycare ids
 // 3 = Hoenn Daycare (Confirmed by user)
