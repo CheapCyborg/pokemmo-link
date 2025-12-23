@@ -122,16 +122,41 @@ const PokemonCardComponent = ({
       className={`text-left w-full h-full group will-change-transform ${className || ""}`}
       {...rest}>
       <div className="bg-white dark:bg-slate-900 rounded-xl shadow-md dark:shadow-slate-950/50 border border-gray-200 dark:border-slate-700 overflow-hidden group-hover:shadow-xl dark:group-hover:shadow-slate-900/80 group-hover:border-indigo-500/50 dark:group-hover:border-indigo-400/50 transition-all duration-300 flex flex-col h-full">
-        <div className="p-2 flex gap-2 bg-linear-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 border-b border-gray-100 dark:border-slate-700 relative group-hover:from-indigo-50/50 group-hover:to-indigo-100/50 dark:group-hover:from-slate-800 dark:group-hover:to-slate-800 transition-colors duration-300 grow">
+        <div className="p-2 flex flex-auto items-center gap-2 bg-linear-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 border-b border-gray-100 dark:border-slate-700 relative group-hover:from-indigo-50/50 group-hover:to-indigo-100/50 dark:group-hover:from-slate-800 dark:group-hover:to-slate-800 transition-colors duration-300">
+          <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
+            <div className="text-[10px] font-mono bg-slate-900/85 dark:bg-slate-100/90 text-white dark:text-slate-900 rounded-md px-2 py-0.5 font-bold shadow-sm leading-none">
+              {dexNum}
+            </div>
+            {(isAlpha || isShiny) && (
+              <div className="flex items-center gap-1">
+                {isAlpha && (
+                  <span className="inline-flex items-center justify-center bg-slate-900/85 dark:bg-slate-100/90 rounded-md px-2 py-0.5 shadow-sm leading-none">
+                    <Flame
+                      className="w-4 h-4 text-red-500 fill-red-500"
+                      aria-label="Alpha"
+                    />
+                  </span>
+                )}
+                {isShiny && (
+                  <span className="inline-flex items-center justify-center bg-slate-900/85 dark:bg-slate-100/90 rounded-md px-2 py-0.5 shadow-sm leading-none">
+                    <Sparkles
+                      className="w-4 h-4 text-yellow-500 fill-yellow-500"
+                      aria-label="Shiny"
+                    />
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
           {/* Left Column: Image */}
-          <div className="shrink-0 flex flex-col items-center justify-center pl-1">
+          <div className="shrink-0 flex items-center justify-center pt-4">
             <Image
               src={imgSrc}
               alt={displayName}
               width={56}
               height={56}
               unoptimized
-              className={`w-14 h-14 object-contain [image-rendering:pixelated] transition-transform duration-500 ease-out ${
+              className={`[image-rendering:pixelated] transition-transform duration-500 ease-out ${
                 isStatic
                   ? "scale-135 group-hover:scale-145"
                   : "scale-125 group-hover:scale-135"
@@ -148,13 +173,10 @@ const PokemonCardComponent = ({
           {/* Right Column: Info */}
           <div className="grow min-w-0 flex flex-col justify-between">
             <div>
-              {/* Header: ID + Badges */}
-              <div className="flex justify-between items-center mb-0.5">
-                <div className="text-[10px] font-mono text-slate-400 dark:text-slate-500 font-bold leading-none">
-                  {dexNum}
-                </div>
+              {/* Header: Level/IV */}
+              <div className="flex justify-end items-center mb-0.5">
                 {context === "daycare" && (
-                  <span className="text-[9px] font-bold text-indigo-500 bg-indigo-50 dark:bg-indigo-950/30 px-1.5 py-0.5 rounded-full mr-auto ml-2">
+                  <span className="text-[9px] font-bold text-indigo-500 bg-indigo-50 dark:bg-indigo-950/30 px-1.5 py-0.5 rounded-full mr-auto ml-0">
                     {DAYCARE_REGIONS.find(
                       (r) => r.id === getRegionForSlot(pokemon.slot)
                     )?.name || "Unknown"}
@@ -164,17 +186,10 @@ const PokemonCardComponent = ({
                   <div className="bg-indigo-600 dark:bg-indigo-500 text-white text-[10px] px-2 py-0.5 rounded-md font-bold shadow-sm leading-none">
                     Lv {pokemon.state.level}
                   </div>
-                  {isAlpha && (
-                    <Flame
-                      className="w-4 h-4 text-red-500 fill-red-500 drop-shadow-sm"
-                      aria-label="Alpha"
-                    />
-                  )}
-                  {isShiny && (
-                    <Sparkles
-                      className="w-4 h-4 text-yellow-500 fill-yellow-500 drop-shadow-sm"
-                      aria-label="Shiny"
-                    />
+                  {perfectIvCount > 0 && (
+                    <span className="text-[9px] font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded border border-green-200 dark:border-green-800 leading-none shadow-sm inline-block shrink-0 whitespace-nowrap">
+                      {perfectIvCount}x31
+                    </span>
                   )}
                 </div>
               </div>
@@ -189,11 +204,6 @@ const PokemonCardComponent = ({
                 )}
                 {pokemon.computed?.gender === "male" && (
                   <Mars className="w-4 h-4 text-blue-500 shrink-0" />
-                )}
-                {perfectIvCount > 0 && (
-                  <span className="text-[9px] font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded border border-green-200 dark:border-green-800 leading-none shadow-sm inline-block shrink-0 whitespace-nowrap">
-                    {perfectIvCount}x31
-                  </span>
                 )}
               </div>
 

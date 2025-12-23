@@ -307,6 +307,8 @@ export type EnrichedMove = PokeApiMove & {
 
 export type EnrichedPokemon = PokeDumpMon & {
   species?: {
+    height: number;
+    weight: number;
     name: string;
     displayName: string;
     sprite: string; // Context-aware main sprite (Shiny/Normal)
