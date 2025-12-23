@@ -19,17 +19,17 @@ object PokemonDumpSchema {
     // ─────────────────────────────────────────────────────────────────────────────
 
     data class DumpEnvelope(
-        @SerializedName("schema_version") val schemaVersion: Int = 2,
-        @SerializedName("captured_at_ms") val capturedAtMs: Long = System.currentTimeMillis(),
-        @SerializedName("source") val source: DumpSource,
-        @SerializedName("pokemon") val pokemon: List<PokemonRecord>
+            @SerializedName("schema_version") val schemaVersion: Int = 2,
+            @SerializedName("captured_at_ms") val capturedAtMs: Long = System.currentTimeMillis(),
+            @SerializedName("source") val source: DumpSource,
+            @SerializedName("pokemon") val pokemon: List<PokemonRecord>
     )
 
     data class PcBoxesEnvelope(
-        @SerializedName("schema_version") val schemaVersion: Int = 2,
-        @SerializedName("captured_at_ms") val capturedAtMs: Long = System.currentTimeMillis(),
-        @SerializedName("source") val source: PcBoxesSource,
-        @SerializedName("boxes") val boxes: Map<String, DumpEnvelope>
+            @SerializedName("schema_version") val schemaVersion: Int = 2,
+            @SerializedName("captured_at_ms") val capturedAtMs: Long = System.currentTimeMillis(),
+            @SerializedName("source") val source: PcBoxesSource,
+            @SerializedName("boxes") val boxes: Map<String, DumpEnvelope>
     )
 
     data class DumpSource(
@@ -49,6 +49,10 @@ object PokemonDumpSchema {
 
     data class PokemonRecord(
             @SerializedName("slot") val slot: Int,
+            @SerializedName("box_id")
+            val boxId: String? = null, // For PC boxes: "box_1", "account_box", etc.
+            @SerializedName("box_slot")
+            val boxSlot: Int? = null, // For PC boxes: slot within box (0-59)
             @SerializedName("identity") val identity: Identity,
             @SerializedName("state") val state: State,
             @SerializedName("stats") val stats: Stats,
@@ -74,7 +78,7 @@ object PokemonDumpSchema {
             @SerializedName("nature") val nature: String,
             @SerializedName("current_hp") val currentHp: Int? = null,
             @SerializedName("xp") val xp: Int? = null,
-            @SerializedName("happiness") val happiness: Int? = null,
+            @SerializedName("happiness") val happiness: Int? = null
     )
 
     data class Stats(
@@ -155,9 +159,11 @@ object PokemonDumpSchema {
                 FieldMapManifest(
                         pokemonFields =
                                 PokemonFields(
-                                        // leave null here, OR fill with your current obfuscated
+                                        // leave null here, OR fill with your current
+                                        // obfuscated
                                         // names if you want:
-                                        // speciesId = "QW0", level = "pt0", evs = "iM0", ivsPacked
+                                        // speciesId = "QW0", level = "pt0", evs = "iM0",
+                                        // ivsPacked
                                         // = "Tm1", nature = "FB1", ...
                                         )
                 )
@@ -165,16 +171,14 @@ object PokemonDumpSchema {
         return template
     }
 
-        private fun asBooleanFlag(value: Any?): Boolean? =
-                        when (value) {
-                                null -> null
-                                is Boolean -> value
-                                is Number -> value.toInt() != 0
-                                is String ->
-                                                value.toBooleanStrictOrNull()
-                                                                ?: value.toIntOrNull()?.let { it != 0 }
-                                else -> null
-                        }
+    private fun asBooleanFlag(value: Any?): Boolean? =
+            when (value) {
+                null -> null
+                is Boolean -> value
+                is Number -> value.toInt() != 0
+                is String -> value.toBooleanStrictOrNull() ?: value.toIntOrNull()?.let { it != 0 }
+                else -> null
+            }
 
     // ─────────────────────────────────────────────────────────────────────────────
     // 4) Adapter: Convert YOUR current extractPokemonData() map -> stable schema
@@ -235,18 +239,15 @@ object PokemonDumpSchema {
                                 isGift = isGift,
                                 isAlpha = isAlpha,
                         ),
-                state = State(
-                        level = level,
-                        nature = nature,
-                        currentHp = (extracted["current_hp"] as? Number)?.toInt(),
-                        xp = (extracted["xp"] as? Number)?.toInt(),
-                        happiness = (extracted["happiness"] as? Number)?.toInt(),
-                ),
-                stats =
-                        Stats(
-                                evs = evsBlock,
-                                ivs = ivsBlock
+                state =
+                        State(
+                                level = level,
+                                nature = nature,
+                                currentHp = (extracted["current_hp"] as? Number)?.toInt(),
+                                xp = (extracted["xp"] as? Number)?.toInt(),
+                                happiness = (extracted["happiness"] as? Number)?.toInt(),
                         ),
+                stats = Stats(evs = evsBlock, ivs = ivsBlock),
                 moves = moves,
                 ability = Ability(id = abilityId, slot = abilitySlot),
                 pokeapiOverride = pokeapiOverride
@@ -324,7 +325,8 @@ object PokemonDumpSchema {
         val spd = parts.getOrElse(4) { 0 }
         val spe = parts.getOrElse(5) { 0 }
 
-        // Also reconstruct a best-effort "raw" list in *your internal* order if you want it.
+        // Also reconstruct a best-effort "raw" list in *your internal* order if you want
+        // it.
         // Using manifest indices -> place values.
         val raw = MutableList(6) { 0 }
         fun put(stat: String, value: Int) {
@@ -364,8 +366,7 @@ object PokemonDumpSchema {
 
         // cap to 4 like a normal moveset, keep zeros if you want; I prefer filtering zeros:
         return ints.take(4).mapIndexedNotNull { index, moveId ->
-            if (moveId == 0) null
-            else Move(moveId, pps.getOrNull(index))
+            if (moveId == 0) null else Move(moveId, pps.getOrNull(index))
         }
     }
 }
