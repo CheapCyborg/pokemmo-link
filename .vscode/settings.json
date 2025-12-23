@@ -39,6 +39,11 @@
   "java.configuration.updateBuildConfiguration": "automatic",
   "java.compile.nullAnalysis.mode": "automatic",
   "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m -Xlog:disable",
+  "kotlin.compiler.jvm.target": "17",
+  "kotlin.languageServer.enabled": true,
+  "kotlin.debugAdapter.enabled": true,
+  "java.import.gradle.enabled": true,
+  "java.import.gradle.wrapper.enabled": true,
   "files.exclude": {
     "**/.next": true,
     "**/node_modules": true,
@@ -75,7 +80,8 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[kotlin]": {
-    "editor.tabSize": 4
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "fwcd.kotlin"
   },
   "[java]": {
     "editor.tabSize": 4
