@@ -1,9 +1,5 @@
 import type { ContainerType, DumpEnvelope } from "@/types/pokemon";
-import {
-  CONTAINER_TYPES,
-  DumpEnvelopeSchema,
-  PcDumpEnvelopeSchema,
-} from "@/types/pokemon";
+import { CONTAINER_TYPES } from "@/types/schemas";
 import fs from "fs/promises";
 import { NextResponse } from "next/server";
 import path from "path";
@@ -14,9 +10,7 @@ export async function GET(request: Request) {
     const sourceParam = searchParams.get("source") || "party";
 
     // Validate source is a valid ContainerType
-    const source: ContainerType = CONTAINER_TYPES.includes(
-      sourceParam as ContainerType
-    )
+    const source: ContainerType = CONTAINER_TYPES.includes(sourceParam as ContainerType)
       ? (sourceParam as ContainerType)
       : "party"; // Default to party if invalid
 
@@ -25,23 +19,13 @@ export async function GET(request: Request) {
 
     try {
       const fileContent = await fs.readFile(filePath, "utf-8");
-      const rawData = JSON.parse(fileContent);
+      const data = JSON.parse(fileContent);
 
-      // Validate based on source type
-      const validated =
-        source === "pc_boxes"
-          ? PcDumpEnvelopeSchema.parse(rawData)
-          : DumpEnvelopeSchema.parse(rawData);
-
-      return NextResponse.json(validated);
+      // Data already validated when ingested, no need to re-validate
+      return NextResponse.json(data);
     } catch (error: unknown) {
       // If file doesn't exist, return a default empty structure
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        (error as { code: string }).code === "ENOENT"
-      ) {
+      if (error && typeof error === "object" && "code" in error && (error as { code: string }).code === "ENOENT") {
         const emptyState: DumpEnvelope = {
           schema_version: 1,
           captured_at_ms: Date.now(),
@@ -58,9 +42,6 @@ export async function GET(request: Request) {
     }
   } catch (error) {
     console.error("Error reading state:", error);
-    return NextResponse.json(
-      { success: false, message: "Failed to read state" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: "Failed to read state" }, { status: 500 });
   }
 }
