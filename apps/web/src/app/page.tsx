@@ -5,12 +5,13 @@ import { useCallback, useMemo, useState } from "react";
 
 import type { EnrichedPokemon } from "@/types/pokemon";
 
+import { DataGrid } from "@/components/common/DataGrid";
+import { CardSkeletonList } from "@/components/common/Skeleton";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { PcBoxViewer } from "@/components/dashboard/PcBoxViewer";
-import { PokemonCardSkeleton } from "@/components/pokemon/PokemonCardSkeleton";
+import { PokemonCard } from "@/components/pokemon/PokemonCard/index";
 import { PokemonDetailsModal } from "@/components/pokemon/PokemonDetailsModal";
-import { PokemonGrid } from "@/components/pokemon/PokemonGrid";
 
 import { usePokemonFlow } from "@/hooks/usePokemonFlow";
 import { getRegionForSlot } from "@/lib/constants/regions";
@@ -59,7 +60,7 @@ export default function Page() {
         : "PC Boxes";
 
   return (
-    <div className="min-h-screen font-sans p-4 md:p-8">
+    <div className="">
       <DashboardHeader
         isLive={hasData ? true : false}
         status={hasData ? "Live" : "Connecting..."}
@@ -116,28 +117,36 @@ export default function Page() {
 
           {/* Content Area */}
           {isPending && !hasData ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {[...Array(6)].map((_, i) => (
-                <PokemonCardSkeleton key={i} />
-              ))}
-            </div>
+            <CardSkeletonList count={6} />
           ) : (
             <>
               {activeTab === "party" && (
-                <PokemonGrid
-                  pokemonList={partyState.visiblePokemon}
-                  onPokemonClick={handleOpenDetails}
+                <DataGrid
+                  items={partyState.visiblePokemon.filter((p) => p.computed !== undefined)}
+                  renderItem={(pokemon) => (
+                    <PokemonCard.Root pokemon={pokemon} onClick={() => handleOpenDetails(pokemon)}>
+                      <PokemonCard.Header context="party" />
+                      <PokemonCard.Body />
+                      <PokemonCard.Footer />
+                    </PokemonCard.Root>
+                  )}
+                  getItemKey={(pokemon) => pokemon.identity.uuid}
                   emptyMessage="Party is empty."
-                  context="party"
                 />
               )}
 
               {activeTab === "daycare" && (
-                <PokemonGrid
-                  pokemonList={filteredDaycareData}
-                  onPokemonClick={handleOpenDetails}
+                <DataGrid
+                  items={filteredDaycareData.filter((p) => p.computed !== undefined)}
+                  renderItem={(pokemon) => (
+                    <PokemonCard.Root pokemon={pokemon} onClick={() => handleOpenDetails(pokemon)}>
+                      <PokemonCard.Header context="daycare" />
+                      <PokemonCard.Body />
+                      <PokemonCard.Footer />
+                    </PokemonCard.Root>
+                  )}
+                  getItemKey={(pokemon) => pokemon.identity.uuid}
                   emptyMessage="Daycare is empty."
-                  context="daycare"
                 />
               )}
 

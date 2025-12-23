@@ -1,5 +1,6 @@
 "use client";
 
+import { NatureBadge, TypeBadge } from "@/components/common/Badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,10 +12,8 @@ import type { EnrichedPokemon } from "@/types/pokemon";
 import { Activity, Flame, Heart, Mars, Sparkles, Swords, Venus, Volume2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { NatureBadge } from "./NatureBadge";
 import { PokemonQuickInfo } from "./PokemonQuickInfo";
 import { PokemonStats } from "./PokemonStats";
-import { TypeBadge } from "./TypeBadge";
 
 interface PokemonDetailsModalProps {
   open: boolean;
