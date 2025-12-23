@@ -1,7 +1,14 @@
 "use client";
 
 import { FriendCard } from "@/components/dashboard/FriendCard";
-import { Box, Clipboard, Database, LayoutGrid, User, Users } from "lucide-react";
+import {
+  Box,
+  Clipboard,
+  Database,
+  LayoutGrid,
+  User,
+  Users,
+} from "lucide-react";
 
 interface DashboardSidebarProps {
   playerName: string;
@@ -29,7 +36,9 @@ export const DashboardSidebar = ({
           <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-3">
             <User size={32} />
           </div>
-          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{playerName}</h2>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">
+            {playerName}
+          </h2>
           <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mt-1">
             ID: {userProfileId.slice(0, 6)}...
           </p>
@@ -41,7 +50,10 @@ export const DashboardSidebar = ({
           <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
             Copy Share Link
           </span>
-          <Clipboard size={14} className="text-indigo-500 dark:text-indigo-400" />
+          <Clipboard
+            size={14}
+            className="text-indigo-500 dark:text-indigo-400"
+          />
         </div>
       </div>
 
@@ -86,7 +98,11 @@ export const DashboardSidebar = ({
       <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm dark:shadow-slate-950/50 border border-slate-200 dark:border-slate-700">
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-bold text-slate-700 dark:text-slate-200 flex items-center text-sm">
-            <Users size={16} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Friends
+            <Users
+              size={16}
+              className="mr-2 text-indigo-500 dark:text-indigo-400"
+            />{" "}
+            Friends
           </h3>
           <span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[9px] font-bold px-2 py-0.5 rounded-full">
             3 Online
