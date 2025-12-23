@@ -1,12 +1,6 @@
 // Structured like your CatsApi - organized by resource
 import { CONFIG } from "@/lib/constants/config";
-import type {
-  ContainerType,
-  DumpEnvelope,
-  PokeApiAbility,
-  PokeApiMove,
-  PokeApiSpecies,
-} from "@/types/pokemon";
+import type { ContainerType, DumpEnvelope, PokeApiAbility, PokeApiMove, PokeApiSpecies } from "@/types/pokemon";
 import { apiClient } from "./client";
 
 export interface FetchStateOptions {
@@ -30,10 +24,9 @@ export const PokemonApi = {
      *
      */
     fetch: async (options: FetchStateOptions): Promise<DumpEnvelope> => {
-      return apiClient.get<DumpEnvelope>(
-        `${CONFIG.api.endpoints.state}?source=${options.source}`,
-        { signal: options.signal }
-      );
+      return apiClient.get<DumpEnvelope>(`${CONFIG.api.endpoints.state}?source=${options.source}`, {
+        signal: options.signal,
+      });
     },
 
     /**
@@ -58,27 +51,72 @@ export const PokemonApi = {
      * Get species data from PokeAPI proxy
      */
     getSpecies: async (speciesId: number | string): Promise<PokeApiSpecies> => {
-      return apiClient.get<PokeApiSpecies>(
-        `${CONFIG.api.endpoints.pokemon}/${speciesId}`
+      return apiClient.get<PokeApiSpecies>(`${CONFIG.api.endpoints.pokemon}/${speciesId}`);
+    },
+
+    /**
+     * Batch fetch multiple species at once
+     */
+    getBatchSpecies: async (speciesIds: (number | string)[]): Promise<Record<string, PokeApiSpecies>> => {
+      const results = await Promise.allSettled(
+        speciesIds.map((id) => apiClient.get<PokeApiSpecies>(`${CONFIG.api.endpoints.pokemon}/${id}`))
       );
+
+      const map: Record<string, PokeApiSpecies> = {};
+      results.forEach((result, index) => {
+        if (result.status === "fulfilled") {
+          map[String(speciesIds[index])] = result.value;
+        }
+      });
+      return map;
     },
 
     /**
      * Get move data from PokeAPI proxy
      */
     getMove: async (moveId: number): Promise<PokeApiMove> => {
-      return apiClient.get<PokeApiMove>(
-        `${CONFIG.api.endpoints.move}/${moveId}`
+      return apiClient.get<PokeApiMove>(`${CONFIG.api.endpoints.move}/${moveId}`);
+    },
+
+    /**
+     * Batch fetch multiple moves at once
+     */
+    getBatchMoves: async (moveIds: number[]): Promise<Record<number, PokeApiMove>> => {
+      const results = await Promise.allSettled(
+        moveIds.map((id) => apiClient.get<PokeApiMove>(`${CONFIG.api.endpoints.move}/${id}`))
       );
+
+      const map: Record<number, PokeApiMove> = {};
+      results.forEach((result, index) => {
+        if (result.status === "fulfilled") {
+          map[moveIds[index]] = result.value;
+        }
+      });
+      return map;
     },
 
     /**
      * Get ability data from PokeAPI proxy
      */
     getAbility: async (abilityId: number): Promise<PokeApiAbility> => {
-      return apiClient.get<PokeApiAbility>(
-        `${CONFIG.api.endpoints.ability}/${abilityId}`
+      return apiClient.get<PokeApiAbility>(`${CONFIG.api.endpoints.ability}/${abilityId}`);
+    },
+
+    /**
+     * Batch fetch multiple abilities at once
+     */
+    getBatchAbilities: async (abilityIds: number[]): Promise<Record<number, PokeApiAbility>> => {
+      const results = await Promise.allSettled(
+        abilityIds.map((id) => apiClient.get<PokeApiAbility>(`${CONFIG.api.endpoints.ability}/${id}`))
       );
+
+      const map: Record<number, PokeApiAbility> = {};
+      results.forEach((result, index) => {
+        if (result.status === "fulfilled") {
+          map[abilityIds[index]] = result.value;
+        }
+      });
+      return map;
     },
   },
 
