@@ -3,6 +3,7 @@ import { CONFIG } from "@/lib/constants/config";
 import type {
   ContainerType,
   DumpEnvelope,
+  PokeApiAbility,
   PokeApiMove,
   PokeApiSpecies,
 } from "@/types/pokemon";
@@ -68,6 +69,15 @@ export const PokemonApi = {
     getMove: async (moveId: number): Promise<PokeApiMove> => {
       return apiClient.get<PokeApiMove>(
         `${CONFIG.api.endpoints.move}/${moveId}`
+      );
+    },
+
+    /**
+     * Get ability data from PokeAPI proxy
+     */
+    getAbility: async (abilityId: number): Promise<PokeApiAbility> => {
+      return apiClient.get<PokeApiAbility>(
+        `${CONFIG.api.endpoints.ability}/${abilityId}`
       );
     },
   },

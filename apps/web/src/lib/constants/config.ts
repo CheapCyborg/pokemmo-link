@@ -27,6 +27,7 @@ export const CONFIG = {
       state: "/api/state",
       pokemon: "/api/pokemon",
       move: "/api/move",
+      ability: "/api/ability",
       ingest: "/api/ingest",
     },
   },
@@ -42,6 +43,7 @@ export const CONFIG = {
     liveData: (source: string) => ["live-data", source] as const,
     pokemonSpecies: (id: string | number) => ["pokemon-species", id] as const,
     move: (id: number) => ["move", id] as const,
+    ability: (id: number) => ["ability", id] as const,
   },
 } as const;
 

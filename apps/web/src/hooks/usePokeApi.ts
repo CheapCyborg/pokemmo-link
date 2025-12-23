@@ -13,9 +13,7 @@ import { useMemo } from "react";
 export function usePokeApiSpecies(ids: (string | number | undefined | null)[]) {
   const validIds = useMemo(() => {
     return Array.from(
-      new Set(
-        ids.filter((id) => id !== null && id !== undefined && id !== "")
-      )
+      new Set(ids.filter((id) => id !== null && id !== undefined && id !== ""))
     ) as (string | number)[];
   }, [ids]);
 
@@ -48,4 +46,22 @@ export function usePokeApiMoves(ids: (number | undefined | null)[]) {
       gcTime: CONFIG.query.gcTime,
     })),
   });
+}
+
+/**
+ * Fetch ability from PokeAPI proxy.
+ */
+export function usePokeApiAbility(id: number | undefined | null) {
+  return useQueries({
+    queries: id
+      ? [
+          {
+            queryKey: CONFIG.queryKeys.ability(id),
+            queryFn: () => PokemonApi.enrichment.getAbility(id),
+            staleTime: CONFIG.query.staleTime.static,
+            gcTime: CONFIG.query.gcTime,
+          },
+        ]
+      : [],
+  })[0];
 }

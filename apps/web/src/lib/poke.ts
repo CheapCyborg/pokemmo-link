@@ -179,7 +179,7 @@ export const enrichPokemon = (
   );
 
   // SPRITE SELECTION LOGIC
-  const isShiny = pokemon.identity.shiny;
+  const isShiny = pokemon.identity.is_shiny;
 
   // Calculate specific URLs for the current state (Shiny or Normal)
   const currentStaticUrl = isShiny
@@ -211,9 +211,50 @@ export const enrichPokemon = (
     }
   }
 
+  // RESOLVE ACTIVE ABILITY
+  let activeAbility:
+    | { name: string; isHidden: boolean; slot: number; id?: number }
+    | undefined;
+  const abilityId = pokemon.ability?.id;
+  const abilitySlot = pokemon.ability?.slot;
+
+  if (abilityId) {
+    const found = apiData.abilities.find((a) => {
+      const parts = a.ability.url.split("/").filter(Boolean);
+      const lastPart = parts[parts.length - 1];
+      if (!lastPart) return false;
+      const id = parseInt(lastPart);
+      return id === abilityId;
+    });
+    if (found) {
+      activeAbility = {
+        name: found.ability.name,
+        isHidden: found.is_hidden,
+        slot: found.slot,
+        id: abilityId,
+      };
+    }
+  }
+
+  // Fallback: Use slot if ID lookup failed (common for Hidden Abilities where ID is missing in dump)
+  if (!activeAbility && abilitySlot) {
+    const found = apiData.abilities.find((a) => a.slot === abilitySlot);
+    if (found) {
+      const parts = found.ability.url.split("/").filter(Boolean);
+      const id = parseInt(parts[parts.length - 1] || "0");
+      activeAbility = {
+        name: found.ability.name,
+        isHidden: found.is_hidden,
+        slot: found.slot,
+        id: id || undefined,
+      };
+    }
+  }
+
   return {
     ...pokemon,
     movesData,
+    activeAbility,
     species: {
       name: apiData.name,
       displayName: toTitleCase(apiData.name),
@@ -230,6 +271,7 @@ export const enrichPokemon = (
       types: apiData.types || [],
       baseStats,
       genderRate: apiData.gender_rate,
+      growth_rate: apiData.growth_rate || null,
       abilities: apiData.abilities.map((a) => ({
         name: a.ability.name,
         isHidden: a.is_hidden,

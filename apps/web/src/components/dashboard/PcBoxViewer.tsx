@@ -105,7 +105,7 @@ function PcBoxViewerComponent({
             data={enrichedPcState.data ?? []}
             totalCount={enrichedPcState.data?.length ?? 0}
             overscan={500} // Reduced from 2000 to improve performance
-            listClassName="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+            listClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
             itemContent={(index, p) => (
               <PokemonCard
                 key={`${p.identity.uuid}-${index}`}

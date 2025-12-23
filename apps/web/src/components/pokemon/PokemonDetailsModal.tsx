@@ -9,10 +9,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePokeApiAbility } from "@/hooks/usePokeApi";
 import { imageCache } from "@/lib/imageCache";
 import { getSpriteUrl, toTitleCase } from "@/lib/poke";
+import { getLevelProgress, getXpForLevel } from "@/lib/xp";
 import type { EnrichedPokemon } from "@/types/pokemon";
-import { Heart, Mars, Venus, Volume2 } from "lucide-react";
+import { Flame, Heart, Mars, Sparkles, Venus, Volume2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
@@ -30,12 +33,31 @@ export function PokemonDetailsModal({
   // Note: We do NOT fetch moves here anymore. They are pre-loaded in pokemon.movesData!
 
   const types = pokemon?.species?.types || [];
+  const isShiny = pokemon?.identity.is_shiny;
+  const isAlpha = pokemon?.identity.is_alpha;
+
+  // Fetch ability description
+  const abilityQuery = usePokeApiAbility(pokemon?.activeAbility?.id);
+  const abilityDescription = (abilityQuery as any)?.data?.description;
+
+  // --- DISPLAY NAME LOGIC ---
+  const nickname = pokemon?.identity.nickname?.trim();
+  const hasNickname = nickname && !nickname.startsWith("Species ");
+  const displayName = hasNickname
+    ? nickname
+    : pokemon?.species?.displayName ||
+      `Species ${pokemon?.identity.species_id}`;
 
   // --- OPTIMIZED IMAGE LOGIC ---
-  const animatedUrl = pokemon?.species?.sprites?.animated;
-  const staticUrl =
-    pokemon?.species?.sprites?.front_default ||
-    (pokemon ? getSpriteUrl(pokemon.identity.species_id, false) : "");
+  const animatedUrl = isShiny
+    ? pokemon?.species?.sprites?.animated_shiny
+    : pokemon?.species?.sprites?.animated;
+
+  const staticUrl = isShiny
+    ? pokemon?.species?.sprites?.front_shiny ||
+      (pokemon ? getSpriteUrl(pokemon.identity.species_id, true) : "")
+    : pokemon?.species?.sprites?.front_default ||
+      (pokemon ? getSpriteUrl(pokemon.identity.species_id, false) : "");
 
   // Determine initial image based on global cache
   const getInitialImage = () => {
@@ -77,32 +99,53 @@ export function PokemonDetailsModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
-                <Image
-                  src={modalImgSrc}
-                  alt={
-                    pokemon.species?.displayName ||
-                    `Species ${pokemon.identity.species_id}`
-                  }
-                  width={72}
-                  height={72}
-                  sizes="96px"
-                  unoptimized
-                  className="w-16 h-16 object-contain [image-rendering:pixelated] rounded-md"
-                  onError={() => {
-                    if (modalImgSrc === animatedUrl && animatedUrl) {
-                      imageCache.reportError(animatedUrl);
-                      setModalImgSrc(staticUrl);
-                    } else if (modalImgSrc !== staticUrl) {
-                      setModalImgSrc(staticUrl);
+                <div className="relative shrink-0">
+                  <Image
+                    src={modalImgSrc}
+                    alt={
+                      pokemon.species?.displayName ||
+                      `Species ${pokemon.identity.species_id}`
                     }
-                  }}
-                />
+                    width={72}
+                    height={72}
+                    sizes="96px"
+                    unoptimized
+                    className={`w-16 h-16 object-contain [image-rendering:pixelated] rounded-md ${
+                      isAlpha
+                        ? "drop-shadow-[0_0_8px_rgba(220,38,38,0.7)]"
+                        : ""
+                    }`}
+                    onError={() => {
+                      if (modalImgSrc === animatedUrl && animatedUrl) {
+                        imageCache.reportError(animatedUrl);
+                        setModalImgSrc(staticUrl);
+                      } else if (modalImgSrc !== staticUrl) {
+                        setModalImgSrc(staticUrl);
+                      }
+                    }}
+                  />
+                  <div className="absolute -top-1 -right-1 flex flex-col gap-1 items-end z-10">
+                    {isAlpha && (
+                      <Flame
+                        className="w-5 h-5 text-red-500 fill-red-500 drop-shadow-sm"
+                        aria-label="Alpha"
+                      />
+                    )}
+                    {isShiny && (
+                      <Sparkles
+                        className="w-5 h-5 text-yellow-500 fill-yellow-500 drop-shadow-sm"
+                        aria-label="Shiny"
+                      />
+                    )}
+                  </div>
+                </div>
                 <div className="min-w-0 grow">
                   <div className="flex items-center gap-2">
-                    <div className="text-base font-extrabold truncate">
-                      {pokemon.species?.displayName ||
-                        pokemon.identity.nickname ||
-                        `Species ${pokemon.identity.species_id}`}
+                    <span className="font-mono text-slate-400 dark:text-slate-500 text-sm font-bold">
+                      #{String(pokemon.identity.species_id).padStart(3, "0")}
+                    </span>
+                    <div className="text-xl font-extrabold truncate">
+                      {displayName}
                     </div>
                     <button
                       onClick={playCry}
@@ -112,10 +155,13 @@ export function PokemonDetailsModal({
                     </button>
                   </div>
                   <div className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                    <span>
-                      {pokemon.species?.displayName ||
-                        `Species ${pokemon.identity.species_id}`}
-                    </span>
+                    {hasNickname && (
+                      <span className="mr-2">
+                        {pokemon.species?.displayName ||
+                          `Species ${pokemon.identity.species_id}`}
+                      </span>
+                    )}
+                    <span className="mr-2">OT: {pokemon.identity.ot_name}</span>
                     <span className="font-['Press_Start_2P'] text-[8px] leading-none text-slate-700 dark:text-slate-300">
                       Lv.{pokemon.state.level}
                     </span>
@@ -131,134 +177,235 @@ export function PokemonDetailsModal({
               </DialogTitle>
             </DialogHeader>
 
-            <div className="mt-3 space-y-3 text-sm">
-              <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1.5">
-                    {types.map((type) => (
-                      <TypeBadge key={type} type={type} size="md" />
-                    ))}
-                  </div>
-                  <NatureBadge
-                    nature={pokemon.state.nature}
-                    className="px-2 py-0.5 text-[10px]"
-                  />
-                  {!!pokemon.pokeapi_override && (
-                    <span className="px-1.5 py-0.5 text-[9px] rounded font-bold border bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800">
-                      OVERRIDE
-                    </span>
-                  )}
-                </div>
+            <div className="mt-3">
+              <Tabs defaultValue="overview" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="moves">Moves</TabsTrigger>
+                </TabsList>
 
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                      Hap
-                    </span>
-                    <Heart className="w-3 h-3 text-pink-500 fill-pink-500" />
-                    <span className="font-['Press_Start_2P'] text-[8px] text-slate-700 dark:text-slate-200 leading-none pt-0.5">
-                      {pokemon.state.happiness ?? "-"}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                    {pokemon.computed?.gender === "female" ? (
-                      <>
-                        <Venus className="w-3.5 h-3.5 text-pink-500" />
-                        <span className="text-[9px] font-bold text-pink-600 dark:text-pink-400 uppercase">
-                          Fem
+                <TabsContent value="overview" className="space-y-3 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1.5">
+                        {types.map((type) => (
+                          <TypeBadge key={type} type={type} size="sm" />
+                        ))}
+                      </div>
+                      <NatureBadge nature={pokemon.state.nature} size="sm" />
+                      {!!pokemon.pokeapi_override && (
+                        <span className="px-1.5 py-0.5 text-[9px] rounded font-bold border bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800">
+                          OVERRIDE
                         </span>
-                      </>
-                    ) : pokemon.computed?.gender === "male" ? (
-                      <>
-                        <Mars className="w-3.5 h-3.5 text-blue-500" />
-                        <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase">
-                          Male
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                          Hap
                         </span>
-                      </>
-                    ) : (
-                      <span className="text-[9px] font-bold text-slate-400 uppercase">
-                        —
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
+                        <Heart className="w-3 h-3 text-pink-500 fill-pink-500" />
+                        <span className="font-['Press_Start_2P'] text-[8px] text-slate-700 dark:text-slate-200 leading-none pt-0.5">
+                          {pokemon.state.happiness ?? "-"}
+                        </span>
+                      </div>
 
-              <PokemonStats pokemon={pokemon} />
-
-              <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3">
-                <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                  Original Trainer
-                </div>
-                <div className="text-sm mt-1 text-slate-900 dark:text-slate-100">
-                  {pokemon.identity.ot_name}
-                </div>
-              </div>
-
-              {/* --- RESTORED MOVES UI --- */}
-              <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3">
-                <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
-                  Moves
-                </div>
-
-                {pokemon.movesData && pokemon.movesData.length > 0 ? (
-                  <div className="space-y-2">
-                    {pokemon.movesData.map((move) => (
-                      <div
-                        key={move.id}
-                        className="rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-2 text-xs">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="font-bold text-slate-700 dark:text-slate-200">
-                            {toTitleCase(move.name)}
-                          </span>
-                          <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
-                            #{move.id}
-                          </span>
-                        </div>
-
-                        <div className="flex gap-2 mb-1.5 items-center">
-                          {/* Type Badge */}
-                          {!!move.type && (
-                            <TypeBadge
-                              type={move.type}
-                              size="sm"
-                              className="rounded"
-                            />
-                          )}
-
-                          {/* Damage Class Badge (Physical/Special) */}
-                          {!!move.damage_class && (
-                            <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-bold uppercase">
-                              {move.damage_class}
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        {pokemon.computed?.gender === "female" ? (
+                          <>
+                            <Venus className="w-3.5 h-3.5 text-pink-500" />
+                            <span className="text-[9px] font-bold text-pink-600 dark:text-pink-400 uppercase">
+                              Fem
                             </span>
-                          )}
-
-                          {/* Stats (Power, Accuracy, PP) */}
-                          <span className="ml-auto text-[10px] font-mono text-slate-500">
-                            PWR: {move.power ?? "-"} • ACC:{" "}
-                            {move.accuracy ?? "-"} • PP:{" "}
-                            {move.pp_left ?? move.pp ?? "-"}
+                          </>
+                        ) : pokemon.computed?.gender === "male" ? (
+                          <>
+                            <Mars className="w-3.5 h-3.5 text-blue-500" />
+                            <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase">
+                              Male
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-[9px] font-bold text-slate-400 uppercase">
+                            —
                           </span>
-                        </div>
-
-                        {/* Description */}
-                        {!!move.description && (
-                          <p className="text-slate-500 italic leading-tight">
-                            {move.description}
-                          </p>
                         )}
                       </div>
-                    ))}
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-xs text-slate-500 mt-1">
-                    {pokemon.moves && pokemon.moves.length > 0
-                      ? "Loading moves..."
-                      : "No moves learned."}
+
+                  {/* Ability Section */}
+                  <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-2.5">
+                    <div className="flex flex-col gap-2 mb-2">
+                      <div className="flex items-center justify-between">
+                        <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                          Ability
+                        </div>
+                        {pokemon.activeAbility && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                              {toTitleCase(pokemon.activeAbility.name)}
+                            </span>
+                            {pokemon.activeAbility.isHidden && (
+                              <span className="px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 text-[9px] font-bold uppercase border border-purple-200 dark:border-purple-800">
+                                Hidden
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {!pokemon.activeAbility && (
+                          <span className="text-xs text-slate-400 italic">
+                            Unknown Ability
+                          </span>
+                        )}
+                      </div>
+                      {abilityDescription && (
+                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed italic">
+                          {abilityDescription}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Possible Abilities List */}
+                    {pokemon.species?.abilities && (
+                      <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        {pokemon.species.abilities.map((a) => {
+                          const isActive =
+                            pokemon.activeAbility?.name === a.name;
+                          return (
+                            <div
+                              key={a.name}
+                              className={`px-1.5 py-0.5 rounded text-[9px] border ${
+                                isActive
+                                  ? "bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 font-bold"
+                                  : "bg-transparent border-transparent text-slate-400 dark:text-slate-500"
+                              }`}>
+                              {toTitleCase(a.name)}
+                              {a.isHidden && " (H)"}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+
+                  {/* XP Section */}
+                  {pokemon.state.xp !== null && (
+                    <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-2.5">
+                      <div className="flex items-center gap-3 mb-1.5">
+                        <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide shrink-0">
+                          XP
+                        </div>
+                        <div className="grow relative h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div
+                            className="absolute inset-y-0 left-0 bg-blue-500 transition-all duration-500 ease-out"
+                            style={{
+                              width: `${getLevelProgress(
+                                pokemon.state.xp,
+                                pokemon.state.level,
+                                pokemon.species?.growth_rate || undefined
+                              )}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                        <span>
+                          Total:{" "}
+                          <strong className="text-slate-700 dark:text-slate-200">
+                            {pokemon.state.xp.toLocaleString()}
+                          </strong>
+                        </span>
+                        {pokemon.state.level < 100 && (
+                          <span>
+                            To Next:{" "}
+                            <strong className="text-slate-700 dark:text-slate-200">
+                              {(
+                                getXpForLevel(
+                                  pokemon.state.level + 1,
+                                  pokemon.species?.growth_rate || undefined
+                                ) - pokemon.state.xp
+                              ).toLocaleString()}
+                            </strong>
+                          </span>
+                        )}
+                        {pokemon.state.level >= 100 && (
+                          <span className="text-amber-600 dark:text-amber-500 font-bold">
+                            MAX LEVEL
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <PokemonStats pokemon={pokemon} />
+                </TabsContent>
+
+                <TabsContent value="moves" className="space-y-3">
+                  {/* --- RESTORED MOVES UI --- */}
+                  <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3">
+                    <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                      Moves
+                    </div>
+
+                    {pokemon.movesData && pokemon.movesData.length > 0 ? (
+                      <div className="space-y-2">
+                        {pokemon.movesData.map((move) => (
+                          <div
+                            key={move.id}
+                            className="rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-2 text-xs">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-bold text-slate-700 dark:text-slate-200">
+                                {toTitleCase(move.name)}
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                                #{move.id}
+                              </span>
+                            </div>
+
+                            <div className="flex gap-2 mb-1.5 items-center">
+                              {/* Type Badge */}
+                              {!!move.type && (
+                                <TypeBadge
+                                  type={move.type}
+                                  size="sm"
+                                  className="rounded"
+                                />
+                              )}
+                              {/* Damage Class Badge (Physical/Special) */}
+                              {!!move.damage_class && (
+                                <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-bold uppercase">
+                                  {move.damage_class}
+                                </span>
+                              )}
+                              {/* Stats (Power, Accuracy, PP) */}
+                              <span className="ml-auto text-[10px] font-mono text-slate-500">
+                                PWR: {move.power ?? "-"} • ACC:{" "}
+                                {move.accuracy ?? "-"} • PP:{" "}
+                                {move.pp_left ?? move.pp ?? "-"}
+                              </span>
+                            </div>
+
+                            {/* Description */}
+                            {!!move.description && (
+                              <p className="text-slate-500 italic leading-tight">
+                                {move.description}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-slate-500 mt-1">
+                        {pokemon.moves && pokemon.moves.length > 0
+                          ? "Loading moves..."
+                          : "No moves learned."}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
           </>
         ) : null}

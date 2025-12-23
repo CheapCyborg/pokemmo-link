@@ -34,6 +34,7 @@ type PokeApiPokemon = {
 
 type PokeApiSpeciesResponse = {
   gender_rate: number;
+  growth_rate?: { name: string; url: string };
   varieties?: Array<{
     pokemon?: { name?: string };
   }>;
@@ -106,8 +107,10 @@ export async function GET(
 
   const json = (await res.json()) as PokeApiPokemon;
 
-  // 3. Fetch species data for gender_rate
+  // 3. Fetch species data for gender_rate and growth_rate
   let genderRate = -1;
+  let growthRate: string | undefined;
+
   try {
     const speciesRes = await fetch(
       `${CONFIG.api.pokeapiUrl}/pokemon-species/${json.id}`,
@@ -116,6 +119,7 @@ export async function GET(
     if (speciesRes.ok) {
       const speciesData = (await speciesRes.json()) as PokeApiSpeciesResponse;
       genderRate = speciesData.gender_rate ?? -1;
+      growthRate = speciesData.growth_rate?.name;
     }
   } catch (e) {
     console.error("Failed to fetch species data", e);
@@ -151,6 +155,7 @@ export async function GET(
     types,
     abilities: json.abilities ?? [],
     gender_rate: genderRate,
+    growth_rate: growthRate,
   };
 
   // Validate before returning

@@ -25,7 +25,7 @@ const TYPE_COLORS: Record<string, string> = {
 interface TypeBadgeProps {
   type: string | null | undefined;
   className?: string;
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "xs";
 }
 
 export function TypeBadge({ type, className, size = "md" }: TypeBadgeProps) {
@@ -35,19 +35,27 @@ export function TypeBadge({ type, className, size = "md" }: TypeBadgeProps) {
   const colorClass =
     TYPE_COLORS[normalizedType] || "bg-gray-400 text-white border-gray-600";
 
+  const sizeClasses = {
+    md: "py-0.5 text-[10px] pl-1.5 pr-2.5",
+    sm: "py-0.5 text-[9px] pl-1.5 pr-2.5",
+    xs: "py-0 text-[8px] pl-1 pr-1.5 h-4",
+  };
+
+  const iconSize = size === "xs" ? 8 : size === "sm" ? 10 : 14;
+
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center rounded-full font-bold border uppercase tracking-wide shadow-sm gap-1 pl-1.5 pr-2.5",
-        size === "sm" ? "py-0.5 text-[9px]" : "py-0.5 text-[10px]",
+        "inline-flex items-center justify-center rounded-full font-bold border uppercase tracking-wide shadow-sm gap-1",
+        sizeClasses[size],
         colorClass,
         className
       )}>
       <Image
         src={`https://raw.githubusercontent.com/duiker101/pokemon-type-svg-icons/master/icons/${normalizedType}.svg`}
         alt=""
-        width={size === "sm" ? 10 : 14}
-        height={size === "sm" ? 10 : 14}
+        width={iconSize}
+        height={iconSize}
         className={cn(
           "object-contain",
           size === "sm" ? "w-2.5 h-2.5" : "w-3.5 h-3.5"

@@ -115,7 +115,7 @@ export const PokeDumpMonSchema = z.object({
     nickname: z.string(),
     ot_name: z.string(),
     personality_value: z.number().int(),
-    shiny: z.boolean().optional().default(false),
+    is_shiny: z.boolean().optional().default(false),
     is_gift: z.boolean().optional().default(false),
     is_alpha: z.boolean().optional().default(false),
   }),
@@ -250,6 +250,7 @@ export const PokeApiSpeciesSchema = z.object({
     })
   ),
   gender_rate: z.number(),
+  growth_rate: z.string().nullable().optional(),
 });
 
 export type PokeApiSpecies = z.infer<typeof PokeApiSpeciesSchema>;
@@ -268,6 +269,15 @@ export const PokeApiMoveSchema = z.object({
 
 export type PokeApiMove = z.infer<typeof PokeApiMoveSchema>;
 
+// PokeAPI ability data from /api/ability/[id]
+export const PokeApiAbilitySchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string().nullable(),
+});
+
+export type PokeApiAbility = z.infer<typeof PokeApiAbilitySchema>;
+
 // Grouped schema exports for convenience
 export const SCHEMAS = {
   statBlock: StatBlockSchema,
@@ -277,6 +287,7 @@ export const SCHEMAS = {
   api: {
     species: PokeApiSpeciesSchema,
     move: PokeApiMoveSchema,
+    ability: PokeApiAbilitySchema,
   },
 } as const;
 
@@ -286,6 +297,7 @@ export type PokemonAbility = {
   name: string;
   isHidden: boolean;
   slot: number;
+  id?: number;
 };
 
 // Helper for the UI to display moves easily
@@ -308,7 +320,11 @@ export type EnrichedPokemon = PokeDumpMon & {
     baseStats: StatBlock;
     genderRate: number;
     abilities: PokemonAbility[];
+    growth_rate: string | null;
   };
+
+  // The specific ability this Pokemon has
+  activeAbility?: PokemonAbility;
 
   // Pre-fetched move data
   movesData?: EnrichedMove[];

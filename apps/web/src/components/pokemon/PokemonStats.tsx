@@ -3,11 +3,7 @@ import { StatRow } from "@/components/pokemon/StatRow";
 import { NATURE_MULTIPLIERS } from "@/lib/poke";
 import type { EnrichedPokemon } from "@/types/pokemon";
 
-export const PokemonStats = ({
-  pokemon,
-}: {
-  pokemon: EnrichedPokemon;
-}) => {
+export const PokemonStats = ({ pokemon }: { pokemon: EnrichedPokemon }) => {
   // If species data isn't loaded yet, show a loading state
   if (!pokemon.species || !pokemon.computed) {
     return (
@@ -22,6 +18,7 @@ export const PokemonStats = ({
   const evs = pokemon.stats.evs;
   const nature = pokemon.state.nature;
   const stats = computed.calculatedStats;
+  const baseStats = pokemon.species.baseStats;
 
   // Use a fixed maximum (e.g., 400) to allow comparison between Pokemon,
   // but expand if this Pokemon has a stat exceeding that (e.g. Blissey HP)
@@ -31,15 +28,18 @@ export const PokemonStats = ({
   return (
     <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3">
       <div className="flex items-center text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mb-2">
-        <div className="w-20">Stat</div>
+        <div className="w-8">Stat</div>
+        <div className="w-8 text-center">Base</div>
         <div className="grow"></div>
-        <div className="w-8 text-right">IV</div>
-        <div className="w-10 text-right">EV</div>
+        <div className="w-10 text-right">Value</div>
+        <div className="w-6 text-right">IV</div>
+        <div className="w-8 text-right">EV</div>
       </div>
       <div className="space-y-2">
         <StatRow
           label="HP"
           stat={stats.hp}
+          base={baseStats.hp}
           iv={ivs.hp}
           ev={evs.hp}
           maxStat={maxStat}
@@ -49,6 +49,7 @@ export const PokemonStats = ({
         <StatRow
           label="Atk"
           stat={stats.atk}
+          base={baseStats.atk}
           iv={ivs.atk}
           ev={evs.atk}
           maxStat={maxStat}
@@ -58,6 +59,7 @@ export const PokemonStats = ({
         <StatRow
           label="Def"
           stat={stats.def}
+          base={baseStats.def}
           iv={ivs.def}
           ev={evs.def}
           maxStat={maxStat}
@@ -67,6 +69,7 @@ export const PokemonStats = ({
         <StatRow
           label="SpA"
           stat={stats.spa}
+          base={baseStats.spa}
           iv={ivs.spa}
           ev={evs.spa}
           maxStat={maxStat}
@@ -76,6 +79,7 @@ export const PokemonStats = ({
         <StatRow
           label="SpD"
           stat={stats.spd}
+          base={baseStats.spd}
           iv={ivs.spd}
           ev={evs.spd}
           maxStat={maxStat}
@@ -85,6 +89,7 @@ export const PokemonStats = ({
         <StatRow
           label="Spe"
           stat={stats.spe}
+          base={baseStats.spe}
           iv={ivs.spe}
           ev={evs.spe}
           maxStat={maxStat}
