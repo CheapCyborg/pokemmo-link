@@ -49,7 +49,7 @@ function PcBoxViewerComponent({
 
   if (!pcQueryData?.boxes && !activeBox) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700">
         <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-full mb-4">
           <Box size={32} className="text-slate-300 dark:text-slate-600" />
         </div>

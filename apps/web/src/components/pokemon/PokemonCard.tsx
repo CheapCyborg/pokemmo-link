@@ -1,4 +1,5 @@
 "use client";
+import { DAYCARE_REGIONS, getRegionForSlot } from "@/lib/constants/regions";
 import { imageCache } from "@/lib/imageCache";
 import { getSpriteUrl, toTitleCase } from "@/lib/poke";
 import { getLevelProgress } from "@/lib/xp";
@@ -16,12 +17,14 @@ interface PokemonCardProps extends Omit<
 > {
   pokemon: EnrichedPokemon;
   onCardClick: (pokemon: EnrichedPokemon) => void;
+  context?: "party" | "daycare" | "pc";
 }
 
 const PokemonCardComponent = ({
   pokemon,
   onCardClick,
   className,
+  context,
   ...rest
 }: PokemonCardProps) => {
   const nickname = pokemon.identity.nickname?.trim();
@@ -118,7 +121,7 @@ const PokemonCardComponent = ({
       onMouseLeave={handleMouseLeave}
       className={`text-left w-full h-full group will-change-transform ${className || ""}`}
       {...rest}>
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-800 overflow-hidden group-hover:shadow-xl group-hover:border-indigo-500/50 dark:group-hover:border-indigo-400/50 transition-all duration-300 flex flex-col h-full">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-md dark:shadow-slate-950/50 border border-gray-200 dark:border-slate-700 overflow-hidden group-hover:shadow-xl dark:group-hover:shadow-slate-900/80 group-hover:border-indigo-500/50 dark:group-hover:border-indigo-400/50 transition-all duration-300 flex flex-col h-full">
         <div className="p-2 flex gap-2 bg-linear-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 border-b border-gray-100 dark:border-slate-700 relative group-hover:from-indigo-50/50 group-hover:to-indigo-100/50 dark:group-hover:from-slate-800 dark:group-hover:to-slate-800 transition-colors duration-300 grow">
           {/* Left Column: Image */}
           <div className="shrink-0 flex flex-col items-center justify-center pl-1">
@@ -150,9 +153,16 @@ const PokemonCardComponent = ({
                 <div className="text-[10px] font-mono text-slate-400 dark:text-slate-500 font-bold leading-none">
                   {dexNum}
                 </div>
+                {context === "daycare" && (
+                  <span className="text-[9px] font-bold text-indigo-500 bg-indigo-50 dark:bg-indigo-950/30 px-1.5 py-0.5 rounded-full mr-auto ml-2">
+                    {DAYCARE_REGIONS.find(
+                      (r) => r.id === getRegionForSlot(pokemon.slot)
+                    )?.name || "Unknown"}
+                  </span>
+                )}
                 <div className="flex gap-1 items-center">
-                  <div className="bg-gray-800 dark:bg-slate-950 text-white text-[8px] px-1.5 py-0.5 rounded-sm font-bold shadow-sm font-['Press_Start_2P'] leading-none">
-                    Lv.{pokemon.state.level}
+                  <div className="bg-indigo-600 dark:bg-indigo-500 text-white text-[10px] px-2 py-0.5 rounded-md font-bold shadow-sm leading-none">
+                    Lv {pokemon.state.level}
                   </div>
                   {isAlpha && (
                     <Flame
@@ -233,7 +243,7 @@ const PokemonCardComponent = ({
 
             <div>
               {/* Compact Stats Grid */}
-              <div className="grid grid-cols-6 gap-px mt-1 pt-1 border-t border-gray-100 dark:border-slate-800">
+              <div className="grid grid-cols-6 gap-px mt-1 pt-1 border-t border-gray-100 dark:border-slate-700">
                 {[
                   { key: "hp", label: "HP" },
                   { key: "atk", label: "Atk" },
@@ -249,11 +259,26 @@ const PokemonCardComponent = ({
                   const ev =
                     pokemon.stats.evs[key as keyof typeof pokemon.stats.evs] ||
                     0;
+                  const iv =
+                    pokemon.stats.ivs[key as keyof typeof pokemon.stats.ivs] ||
+                    0;
                   return (
                     <div key={key} className="flex flex-col items-center">
-                      <span className="text-[9px] text-slate-400 uppercase font-bold">
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold">
                         {label}
                       </span>
+                      <div className="h-3 flex items-center justify-center">
+                        <span
+                          className={`text-[8px] font-bold leading-none ${
+                            iv === 31
+                              ? "text-green-600 dark:text-green-400"
+                              : iv === 0
+                                ? "text-red-500 dark:text-red-400"
+                                : "text-blue-500 dark:text-blue-400"
+                          }`}>
+                          {iv}
+                        </span>
+                      </div>
                       <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300 leading-none">
                         {val}
                       </span>
@@ -297,7 +322,7 @@ const PokemonCardComponent = ({
           </div>
         </div>
 
-        <div className="bg-gray-50 dark:bg-slate-800/50 px-2 py-1.5 text-[9px] text-gray-400 dark:text-slate-500 border-t border-gray-100 dark:border-slate-800 flex flex-col gap-1 shrink-0">
+        <div className="bg-gray-50 dark:bg-slate-800/50 px-2 py-1.5 text-[9px] text-gray-400 dark:text-slate-400 border-t border-gray-100 dark:border-slate-700 flex flex-col gap-1 shrink-0">
           {/* XP Bar */}
           {pokemon.state.xp !== null && (
             <div className="w-full h-1 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">

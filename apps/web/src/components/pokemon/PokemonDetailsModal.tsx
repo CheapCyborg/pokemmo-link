@@ -152,22 +152,24 @@ export function PokemonDetailsModal({
                       <Volume2 className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                    {hasNickname && (
-                      <span className="mr-2">
-                        {pokemon.species?.displayName ||
-                          `Species ${pokemon.identity.species_id}`}
-                      </span>
-                    )}
-                    <span className="mr-2">OT: {pokemon.identity.ot_name}</span>
-                    <span className="font-['Press_Start_2P'] text-[8px] leading-none text-slate-700 dark:text-slate-300">
-                      Lv.{pokemon.state.level}
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {hasNickname && (
+                        <span className="font-medium">
+                          {pokemon.species?.displayName ||
+                            `Species ${pokemon.identity.species_id}`}
+                          {" · "}
+                        </span>
+                      )}
+                      <span>OT: {pokemon.identity.ot_name}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold">
+                      Lv {pokemon.state.level}
                     </span>
                     {pokemon.state.current_hp !== null &&
                     pokemon.computed?.calculatedStats.hp ? (
-                      <span className="font-['Press_Start_2P'] text-[8px] leading-none text-slate-700 dark:text-slate-300">
-                        HP {pokemon.state.current_hp}/
-                        {pokemon.computed.calculatedStats.hp}
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-[10px] font-bold">
+                        HP {pokemon.state.current_hp}/{pokemon.computed.calculatedStats.hp}
                       </span>
                     ) : null}
                   </div>
@@ -199,12 +201,9 @@ export function PokemonDetailsModal({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                          Hap
-                        </span>
+                      <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800/50">
                         <Heart className="w-3 h-3 text-pink-500 fill-pink-500" />
-                        <span className="font-['Press_Start_2P'] text-[8px] text-slate-700 dark:text-slate-200 leading-none pt-0.5">
+                        <span className="text-[10px] font-bold text-pink-700 dark:text-pink-400">
                           {pokemon.state.happiness ?? "-"}
                         </span>
                       </div>
@@ -234,7 +233,7 @@ export function PokemonDetailsModal({
                   </div>
 
                   {/* Ability Section */}
-                  <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-2.5">
+                  <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 p-2.5">
                     <div className="flex flex-col gap-2 mb-2">
                       <div className="flex items-center justify-between">
                         <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
@@ -267,7 +266,7 @@ export function PokemonDetailsModal({
 
                     {/* Possible Abilities List */}
                     {pokemon.species?.abilities && (
-                      <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-700">
                         {pokemon.species.abilities.map((a) => {
                           const isActive =
                             pokemon.activeAbility?.name === a.name;
@@ -290,7 +289,7 @@ export function PokemonDetailsModal({
 
                   {/* XP Section */}
                   {pokemon.state.xp !== null && (
-                    <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-2.5">
+                    <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 p-2.5">
                       <div className="flex items-center gap-3 mb-1.5">
                         <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide shrink-0">
                           XP
@@ -342,7 +341,7 @@ export function PokemonDetailsModal({
 
                 <TabsContent value="moves" className="space-y-3">
                   {/* --- RESTORED MOVES UI --- */}
-                  <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3">
+                  <div className="rounded-lg border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 p-3">
                     <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
                       Moves
                     </div>

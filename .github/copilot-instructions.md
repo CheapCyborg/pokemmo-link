@@ -1,426 +1,320 @@
-# PokeMMO Link - AI Agent Instructions
+# PokeMMO Link - Agent Instructions
 
-## Critical Context
+<project_identity>
+Real-time companion dashboard for PokeMMO displaying live Pokemon party, daycare, and PC box data.
 
-PROJECT TYPE: Real-time companion dashboard for PokeMMO game
-ARCHITECTURE: Monorepo with Next.js frontend + Kotlin memory snooper agent
-CURRENT STATE: Phase 1 (file-based state, single-user, local-only)
-FUTURE GOAL: Social platform with user auth, friends, public trainer cards (see .github/ROADMAP.md)
+**Architecture:** Monorepo with Next.js frontend + Kotlin packet snooper agent
+**Phase:** Phase 1 (file-based, single-user, local-only)
+**Future:** Phase 2+ social platform with auth, friends, public trainer cards (see ROADMAP.md)
+</project_identity>
 
-## System Components
+<tech_stack>
+**Frontend (apps/web):**
 
-### Frontend (apps/web)
+- Next.js 16 App Router + React 19 + TypeScript (strict)
+- Tailwind CSS 4 + Shadcn/ui
+- TanStack Query v5 (3s polling)
+- File-based JSON: `apps/web/data/`
 
-- Framework: Next.js 16 (App Router) with React 19
-- Language: TypeScript (strict mode)
-- Styling: Tailwind CSS 4 + Shadcn/ui components
-- State: TanStack Query v5 with 3-second polling
-- Data source: File-based JSON dumps in apps/web/data/
+**Agent (apps/agent):**
 
-### Agent (apps/agent)
+- Kotlin + Java + ByteBuddy
+- Packet snooping via ByteBuddy hooks
+- HTTP POST to `/api/ingest`
+- CRITICAL: `PokeMMO.jar` required in `apps/agent/libs/`
 
-- Language: Kotlin + Java
-- Technique: ByteBuddy runtime instrumentation
-- Target: PokeMMO.jar game process memory
-- Output: JSON dumps POSTed to Next.js /api/ingest endpoint
-
-### Communication Flow
+**Data Flow:**
 
 ```
-PokeMMO Process
-  -> ByteBuddy hooks packet handlers
-  -> Snooper extracts data from obfuscated fields
-  -> Writes dump-party.json, dump-daycare.json, dump-pc_boxes.json
-  -> POSTs to http://localhost:3000/api/ingest
-  -> Next.js writes to apps/web/data/
-  -> /api/state serves JSON files
-  -> React components fetch via TanStack Query
-  -> UI updates every 3 seconds
+PokeMMO -> ByteBuddy Hooks -> JSON Serialization -> POST /api/ingest
+  -> apps/web/data/ -> GET /api/state (3s poll) -> React Components
 ```
 
-## Type Definitions (apps/web/src/types/pokemon.ts)
+**Key Points:**
 
-### DumpEnvelope
+- Agent intercepts network packets, NOT memory
+- Obfuscated field names change with PokeMMO updates
+- PC boxes arrive in partial packets and are aggregated
+- File-based persistence (no database in Phase 1)
+  </tech_stack>
 
-Top-level wrapper for all Pokemon data dumps.
+<core_types>
+**File:** `apps/web/src/types/pokemon.ts`
 
-- schema_version: number (increment when breaking changes occur)
-- captured_at_ms: number (Unix timestamp in milliseconds)
-- source: "party" | "daycare" | "pc_boxes"
-- pokemon: PokeDumpMon[]
+**DumpEnvelope:**
 
-### PokeDumpMon
+```typescript
+{
+  schema_version: number
+  captured_at_ms: number
+  source: { packet_class, container_id, container_type, capacity? }
+  pokemon: PokeDumpMon[]
+}
+```
 
-Individual Pokemon data structure.
+**PokeDumpMon:**
 
-IDENTITY:
+```typescript
+{
+  slot: number
+  identity: { uuid, species_id, form_id?, nickname, ot_name, personality_value, shiny?, is_gift?, is_alpha? }
+  state: { level, nature, current_hp?, xp?, happiness? }
+  stats: { ivs: StatBlock, evs: StatBlock }
+  moves: MoveData[]
+  ability: { id?, slot? }
+  pokeapi_override?: string
+}
+```
 
-- species_id: number
-- form_id: number
-- nickname: string | null
-- is_shiny: boolean
-- gender: "male" | "female" | "genderless"
+**StatBlock:** `{ hp, atk, def, spa, spd, spe }`
+</core_types>
 
-STATE:
+<commands>
+**Start:**
+```powershell
+npm run dev              # Both web + agent
+npm run dev:web          # Next.js (localhost:3000)
+npm run dev:agent        # Kotlin snooper
+```
 
-- level: number
-- current_hp: number
-- max_hp: number
-- status: string (healthy, poisoned, burned, asleep, frozen, paralyzed)
-
-STATS:
-
-- ivs: StatBlock (hp, atk, def, spa, spd, spe: all 0-31)
-- evs: StatBlock (hp, atk, def, spa, spd, spe: all 0-255)
-- nature: string (maps to stat modifiers)
-- ability: striCommands
-
-### Starting Development Environment
+**Web (apps/web):**
 
 ```powershell
-npm run dev              # Root: runs both web and agent concurrently
-npm run dev:web          # Next.js dev server (localhost:3000)
-npm run dev:agent        # Kotlin snooper (requires PokeMMO.jar in apps/agent/libs/)
-```
-
-### Web App (apps/web)
-
-```powershell
-npm run build            # Production build (.next output)
-npm start                # Serve production build
+npm run build            # Production build
+npm start                # Serve production
 npm run lint             # ESLint validation
-npm run lint:fix         # Auto-fix ESLint issues
-npm run type-check       # TypeScript compilation check (no emit)
-npm run format           # Prettier format all files
-npm run format:check     # Check formatting without changes
-npm run clean            # Remove .next and data/dump-*.json
+npm run lint:fix         # Auto-fix
+npm run type-check       # TypeScript check
+npm run format           # Prettier format
+npm run format:check     # Check formatting
+npm run clean            # Remove .next + data/dump-*.json
 ```
 
-### Agent (apps/agent)
+**Agent (apps/agent):**
 
-```powershell
-./gradlew.bat build      # Compile Kotlin to JAR
-./gradlew.bat runSnooper # Run memory snooper (attaches to PokeMMO process)
-```
-
-REQUIREMENT: PokeMMO.jar must exist in apps/agent/libs/ for agent to compile and run.apps/web
-npm run build # Production build
-npm start # Run production server
-npm run lint # ESLint check
-npm run lint:fix # Auto-fix style issues
-npm run type-check # TypeScript validation
-npm run format # Prettier formatting
-npm run clean # Remove .next and dump files
-
-````
-
-### Agent Build
 ```powershell
 cd apps/agent
-./gradlew.bat build    # Compile Kotlin
-./gradlew.bat runSnooper  # Run memory snooper
-````
-
-## Code Patterns
-
-### Custom Hooks (apps/web/src/hooks/)
-
-useLiveData(source: "party" | "daycare" | "pc_boxes")
-
-- Fetches /api/state?source={source}
-- TanStack Query with 3-second refetch interval
-- Returns DumpEnvelope or undefined
-- staleTime: 200000ms (3min 20s)
-- Handles graceful fallback if file missing
-
-useEnrichedPokemon(dumpData: DumpEnvelope)
-
-- Enriches Pokemon with PokeAPI sprites and base stats
-- Uses parallel queries for each unique species
-- Returns EnrichedPokemon[] with sprite URLs
-- Caches PokeAPI responses in localStorage
-
-usePokeApi(speciesId: number)
-
-- Fetches sprite and base stats from PokeAPI proxy
-- Endpoint: /api/pokemon/{species-id}
-- Client-side caching via TanStack Query
-
-PATTERN: Use useMemo to prevent re-computation on every render
-PATTERN: Prefer client components for interactive features, server components for static content
-
-### API Route Structure (apps/web/src/app/api/)
-
-/api/state/route.ts
-
-- GET handler with source query param
-- Snooper Implementation (apps/agent/src/main/java/Snooper.kt)
-
-### Obfuscated Field Mappings
-
-PokeMMO uses obfuscated field names that change with game updates. Current mappings (as of Dec 2025):
-
-```kotlin
-FIELD_SPECIES_ID = "QW0"        // Pokemon species ID (1-649+)
-FIELD_LEVEL = "pt0"             // Current level (1-100)
-FIELD_NICKNAME = "Uy0"          // Custom nickname or null
-FIELD_EVS = "iM0"               // Effort Values object
-FIELD_IVS_PACKED = "Tm1"        // Individual Values (packed int, extract via bit shifts)
-FIELD_MOVES = "y5"              // Move set array
-FIELD_STATUS = "mp0"            // Status condition
-FIELD_SLOT_INDEX_REAL = "Ch1"  // Global slot index for PC storage
-FIELD_CONTAINER_INFO = "Dq1"   // Container metadata object
-FIELD_CAPACITY = "qN1"          // Container capacity (6=party, 2-3=daycare, 60+=PC)
+.\gradlew.bat build      # Compile to JAR
+.\gradlew.bat runSnooper # Run snooper
+.\gradlew.bat clean      # Clean build
 ```
 
-CRITICAL: These mappings fail silently when PokeMMO updates. Verify extraction by checking data/dump-party.json after game patches.
+</commands>
 
-DEBUG PROCESS:
+<code_patterns>
+**Hooks (apps/web/src/hooks/):**
 
-1. Enable debug mode in Snooper.kt to generate dump-debug-fields.txt
-2. Correlate field names with expected values (e.g., level should be 1-100)
-3. Common Workflows
+`useLiveData(source: ContainerType)` - Fetch /api/state with 3s polling
+`useEnrichedPokemon(dumpData)` - Enrich with PokeAPI sprites/stats
+`usePokeApi(speciesId)` - Fetch sprite/stats from PokeAPI proxy
 
-### Adding New Pokemon Field
+**Pattern:** Use `useMemo` to prevent re-computation. Prefer client components for interactivity, server components for static content.
 
-1. Define in apps/web/src/types/pokemon.ts (PokeDumpMon interface)
-2. Extract in apps/agent/src/main/java/Snooper.kt via reflection
-3. Update schema_version if breaking compatibility
-4. Rebuild agent: ./gradlew.bat build
-5. Update UI components (e.g., PokemonCard.tsx, PokemonStats.tsx)
-6. Test with live game data
+**API Routes (apps/web/src/app/api/):**
 
-### Debugging Data Extraction Issues
+`/api/state/route.ts` - GET handler, reads JSON from `apps/web/data/`
+`/api/ingest/route.ts` - POST handler, writes JSON to `apps/web/data/`
+`/api/pokemon/[slug]/route.ts` - PokeAPI proxy for sprites/stats
 
-1. Verify apps/web/data/dump-party.json exists and has recent captured_at_ms
-2. Check Snooper console for "Synced to Next.js" success messages
-3. Inspect dump-debug-fields.txt for field name changes
-4. Clear React Query cache: localStorage.removeItem('pokemmo-link-pokemon-cache-\*')
-5. Check React Query DevTools tab in browser (shows cache state and refetch timing)
-6. Verify PokeMMO is running and party/daycare/PC is open
+**Snooper (apps/agent/src/main/java/Snooper.kt):**
 
-### Updating for PokeMMO Game Patches
-
-1. Run PokeMMO with Snooper attached
-2. Enable debug mode to generate dump-debug-fields.txt
-3. Compare field names with constants in Snooper.kt
-4. Update obfuscated field mappings as needed
-5. Rebuild and test extraction with known Pokemon data
-6. Verify all containers (party, daycare, PC) still extract correctly
-
-### Styling New Components
-
-RULES:
-
-- Use Tailwind utility classes exclusively
-- Follow mobile-first responsive design (base styles, then sm:, md:, lg: breakpoints)
-- Dark mode: prefix utilities with dark: (e.g., dark:bg-slate-950)
-- Color palette: slate (slate-50 to slate-950)
-- SCritical File Paths
-
-FRONTEND:
-
-- apps/web/src/app/page.tsx - Main dashboard entry point
-- apps/web/src/app/api/state/route.ts - File-based state serving API
-- apps/web/src/app/api/ingest/route.ts - Data ingestion from Snooper
-- apps/web/src/types/pokemon.ts - Core type definitions
-- apps/web/src/hooks/useLiveData.ts - TanStack Query hook for polling
-- apps/web/src/components/pokemon/PokemonCard.tsx - Card component
-- apps/web/src/lib/QueryProvider.tsx - React Query configuration
-- apps/web/tailwind.config.ts - Tailwind configuration
-- apps/web/data/dump-\*.json - Runtime data files (git-ignored)
-
-AGENT:
-
-- apps/agent/src/main/java/Snooper.kt - Main snooper logic
-- apps/agent/src/main/java/PokemonDumpSchema.kt - JSON serialization
-- apps/agent/build.gradle.kts - Gradle build configuration
-- apps/agent/libs/PokeMMO.jar - Required game JAR (not in repo)
-- apps/agent/dump-debug-fields.txt - Debug output for field discovery
-
-CONFIG:
-
-- .github/copilot-instructions.md - This file
-- .github/ROADMAP.md - Project goals and future architecture
-- package.json - Root workspace scripts
-- apps/web/package.json - Frontend dependencies
-
-ENVIRONMENT:
-
-- .env.local - Optional environment variables (git-ignored)
-- Default API URL: http://localhost:3000
-
-## Troubleshooting Decision Tree
-
-SYMPTOM: App crashes on load
-
-- Check browser console for ErrorBoundary output
-- Verify apps/web/data/ directory exists
-- Check for malformed JSON in dump files
-- Ensure React Query DevTools shows no errors
-
-SYMPTOM: "No data yet" message persists
-
-- Verify Snooper is running (check terminal output)
-- Confirm PokeMMO is open and logged in
-- Check Snooper console for HTTP errors
-- Verify Next.js dev server is running on port 3000
-- Check apps/web/data/ for dump-\*.json files with recent timestamps
-
-SYMPTOM: Pokemon sprites not loading
-
-- Check browser network tab for PokeAPI proxy errors
-- Clear localStorage: localStorage.clear()
-- Verify /api/pokemon/[slug] route is responding
-- Check for rate limiting from PokeAPI
-
-SYMPTOM: Data extraction produces null/missing fields
-
-- PokeMMO game version changed (obfuscated field names updated)
-- Check dump-debug-fields.txt for current field mappings
-- Compare with constants in Snooper.kt
-- Update field names and rebuild agent
-- Verify schema_version incremented if breaking change
-
-SYMPTOM: Port 3000 already in use
-
-- Kill existing Node process: taskkill /F /IM node.exe
-- Or change port in package.json dev script
-- Update NEXT_PUBLIC_API_URL if using different port
-
-SYMPTOM: Gradle build fails
-
-- Verify PokeMMO.jar exists in apps/agent/libs/
-- Check Java version: java -version (require 11+)
-- Clean build: ./gradlew.bat clean build
-- Check apps/agent/build/reports/problems/ for details
-
-SYMPTOM: React Query not refetching
-
-- Check staleTime is set correctly (200000ms)
-- Verify refetchInterval is 3000ms
-- Clear React Query cache in DevTools
-- Check network tab for /api/state calls every 3 seconds
-
-## Agent Behavior Rules
-
-WHEN EDITING FILES:
-
-- Always preserve existing formatting and indentation
-- Do not add unnecessary comments or documentation unless requested
-- Follow existing patterns in the file
-- Test changes before considering task complete
-
-WHEN CREATING FILES:
-
-- Use consistent naming conventions (PascalCase for components, camelCase for utilities)
-- Place in appropriate directory based on existing structure
-- Import dependencies that already exist in package.json
-- Match existing code style and patterns
-
-WHEN TROUBLESHOOTING:
-
-- Read error messages completely before suggesting solutions
-- Check file paths are absolute and correct for Windows (backslashes or forward slashes)
-- Verify dependencies are installed before suggesting code changes
-- Reference existing working code as examples
-
-WHEN SUGGESTING CHANGES:
-
-- Prioritize existing patterns over introducing new libraries
-- Consider backward compatibility with Phase 1 architecture
-- Reference .github/ROADMAP.md for future architecture decisions
-- Avoid premature optimization
-
-CONSTRAINTS:
-
-- No database in Phase 1 (file-based only)
-- No authentication in Phase 1 (single-user)
-- No external API calls except PokeAPI proxy
-- Must maintain compatibility with Snooper JSON format
-- Must work offline (except PokeAPI enrichment)
-  AVOID: Inline styles, CSS modules, custom CSS files
-  PREFER: Server components unless interactivity required
-
-### Field Mappings (Snooper)
-
-Obfuscated PokeMMO fields are hardcoded:
+**Obfuscated Field Mappings (Dec 2025):**
 
 ```kotlin
-// Pokemon data (f.LN)
 FIELD_SPECIES_ID = "QW0"
 FIELD_LEVEL = "pt0"
 FIELD_NICKNAME = "Uy0"
 FIELD_EVS = "iM0"
-FIELD_IVS_PACKED = "Tm1"  // Packed into single int, extract via shifts
+FIELD_IVS_PACKED = "Tm1"
 FIELD_MOVES = "y5"
 FIELD_STATUS = "mp0"
-FIELD_SLOT_INDEX_REAL = "Ch1" // Global slot index for PC storage
+FIELD_SLOT_INDEX_REAL = "Ch1"
+FIELD_CONTAINER_INFO = "Dq1"
+FIELD_CAPACITY = "qN1"
+FIELD_FLAGS = "U30"  // Shiny/Gift flags
 ```
 
-These must match the PokeMMO version or dumps fail silently. Check `dump-debug-fields.txt` if extraction breaks.
+**CRITICAL:** These change with PokeMMO updates. Enable debug mode for `dump-debug-fields.txt` to rediscover mappings.
 
-### PC Box Handling (Snooper)
+**PC Box Handling:**
 
-- PC data arrives in partial packets.
-- Snooper aggregates these into `dump-pc_boxes.json`.
-- **Global Slot Index (`Ch1`)**: Used to determine the box and slot.
-  - `boxNum = (globalSlot / 60) + 1`
-  - `slotInBox = globalSlot % 60`
-- Boxes are named `box_1` to `box_11`, `account_box`, and `extra_box_N`.
+- Arrives in partial packets, aggregated into `dump-pc_boxes.json`
+- Global slot index: `boxNum = (globalSlot / 60) + 1`, `slotInBox = globalSlot % 60`
+- Boxes: `box_1` to `box_11`, `account_box`, `extra_box_N`
+  </code_patterns>
 
-## Project-Specific Tips
+<workflows>
+**Add New Pokemon Field:**
+1. Define in `apps/web/src/types/pokemon.ts` (PokeDumpMon interface)
+2. Extract in `apps/agent/src/main/java/Snooper.kt` via reflection
+3. Update `schema_version` if breaking
+4. Rebuild: `.\gradlew.bat build`
+5. Update UI components
+6. Test with live data
 
-### Debugging Live Data
+**Debug Extraction Issues:**
 
-1. Check `data/dump-party.json` exists and has recent `captured_at_ms`
-2. Verify snooper console shows "✓ Synced to Next.js" messages
-3. Clear React Query cache: `localStorage.removeItem('pokemmo-link-pokemon-cache-*')`
-4. Browser dev tools: React Query DevTools tab shows cache state and refetch timing
+1. Verify `apps/web/data/dump-party.json` exists + recent `captured_at_ms`
+2. Check Snooper console for "Synced to Next.js"
+3. Inspect `dump-debug-fields.txt` for field changes
+4. Clear React Query cache: `localStorage.removeItem('pokemmo-link-pokemon-cache-*')`
+5. Check React Query DevTools
+6. Verify PokeMMO running + party/daycare/PC open
 
-### Updating Snooper Field Mappings
+**Update for PokeMMO Patches:**
 
-When PokeMMO updates and field names change:
+1. Run PokeMMO with Snooper attached
+2. Enable debug mode -> `dump-debug-fields.txt`
+3. Compare field names with constants in Snooper.kt
+4. Update obfuscated field mappings
+5. Rebuild and test with known Pokemon data
+6. Verify all containers (party, daycare, PC)
 
-1. Run PokeMMO with Snooper to generate `dump-debug-fields.txt`
-2. Correlate dump output with game class structure
-3. Update field names in `Snooper.kt` top section
-4. Test with a fresh `./gradlew.bat runSnooper` and observe dumps
+**Style New Components:**
 
-### Adding New Pokemon Data Fields
+- Use Tailwind utilities exclusively
+- Mobile-first responsive: base, then `sm:`, `md:`, `lg:`
+- Dark mode: prefix with `dark:`
+- Color palette: slate (slate-50 to slate-950)
+- Avoid inline styles, CSS modules, custom CSS
+- Prefer server components unless interactivity required
+  </workflows>
 
-1. Add field to `PokeDumpMon` type in `src/types/pokemon.ts`
-2. Extract in Snooper via reflection on `f.LN` object
-3. Update component rendering (e.g., `PokemonCard.tsx`)
-4. Increase `schema_version` in dump envelope if schema breaks compatibility
+<critical_files>
+**Frontend:**
 
-### Styling Guidelines
+- `apps/web/src/app/page.tsx` - Main dashboard
+- `apps/web/src/app/api/state/route.ts` - State serving API
+- `apps/web/src/app/api/ingest/route.ts` - Data ingestion
+- `apps/web/src/types/pokemon.ts` - Type definitions
+- `apps/web/src/hooks/useLiveData.ts` - TanStack Query hook
+- `apps/web/src/components/pokemon/PokemonCard.tsx` - Card component
+- `apps/web/src/lib/QueryProvider.tsx` - React Query config
+- `apps/web/tailwind.config.ts` - Tailwind config
+- `apps/web/data/dump-*.json` - Runtime data (git-ignored)
 
-- Use Tailwind utility classes; avoid custom CSS unless necessary
-- Dark mode uses `dark:` prefix (e.g., `dark:bg-slate-950`)
-- Responsive: mobile-first design with `sm:`, `md:` breakpoints
-- Colors follow slate palette (slate-50 through slate-950)
+**Agent:**
 
-### Testing
+- `apps/agent/src/main/java/Snooper.kt` - Main snooper logic
+- `apps/agent/src/main/java/PokemonDumpSchema.kt` - JSON serialization
+- `apps/agent/build.gradle.kts` - Gradle build
+- `apps/agent/libs/PokeMMO.jar` - Required game JAR (not in repo)
+- `apps/agent/dump-debug-fields.txt` - Debug field discovery
 
-- No automated tests currently configured
-- Manual testing: run both servers, open PokeMMO, navigate party/daycare
-- Check console logs for API errors or missing data
+**Config:**
 
-## Important Files to Know
+- `.github/copilot-instructions.md` - This file
+- `.github/ROADMAP.md` - Project goals
+- `package.json` - Root workspace scripts
+- `apps/web/package.json` - Frontend dependencies
 
-- **Frontend entry**: `src/app/page.tsx` (main dashboard)
-- **State API**: `src/app/api/state/route.ts` (file-based serving)
-- **Type definitions**: `src/types/pokemon.ts` (DumpEnvelope, PokeDumpMon)
-- **Snooper logic**: `apps/agent/src/main/java/Snooper.kt` (memory extraction, packet hooking)
-- **React Query setup**: `src/lib/QueryProvider.tsx`
-- **Tailwind config**: `tailwind.config.ts`
-- **Environment vars**: `.env.local` (optional, uses defaults if missing)
+**Environment:**
 
-## Troubleshooting Checklist
+- `.env.local` - Optional env vars (git-ignored)
+- Default API URL: http://localhost:3000
+  </critical_files>
 
-- **App crashes on load**: Check `ErrorBoundary` in browser console
-- **"No data yet" status**: Snooper may not be running or PokeMMO not open
-- **Stale Pokemon sprites**: PokeAPI cache expired; clear localStorage or wait for next refresh
-- **Field extraction fails**: PokeMMO version mismatch; check `dump-debug-fields.txt` for correct field names
-- **Port 3000 in use**: Kill existing Node process or change `NEXT_PUBLIC_API_URL`
+<troubleshooting>
+**App crashes on load:**
+- Check browser console for ErrorBoundary
+- Verify `apps/web/data/` exists
+- Check for malformed JSON
+- React Query DevTools for errors
+
+**"No data yet" persists:**
+
+- Verify Snooper running (check terminal)
+- Confirm PokeMMO open and logged in
+- Check Snooper console for HTTP errors
+- Verify Next.js on port 3000
+- Check `apps/web/data/` for recent dump-\*.json
+
+**Pokemon sprites not loading:**
+
+- Check network tab for PokeAPI errors
+- Clear localStorage: `localStorage.clear()`
+- Verify `/api/pokemon/[slug]` responding
+- Check PokeAPI rate limiting
+
+**Data extraction null/missing fields:**
+
+- PokeMMO version changed (obfuscated fields updated)
+- Check `dump-debug-fields.txt` for current mappings
+- Compare with constants in Snooper.kt
+- Update field names and rebuild
+- Increment `schema_version` if breaking
+
+**Port 3000 in use:**
+
+- Kill Node: `taskkill /F /IM node.exe`
+- Or change port in package.json
+- Update NEXT_PUBLIC_API_URL
+
+**Gradle build fails:**
+
+- Verify `PokeMMO.jar` in `apps/agent/libs/`
+- Check Java version: `java -version` (require 11+)
+- Clean build: `.\gradlew.bat clean build`
+- Check `apps/agent/build/reports/problems/`
+
+**React Query not refetching:**
+
+- Verify staleTime: 200000ms
+- Verify refetchInterval: 3000ms
+- Clear cache in DevTools
+- Check network tab for /api/state every 3s
+  </troubleshooting>
+
+<behavior_rules>
+**Follow User Instructions Exactly:**
+
+- Answer the specific question or task requested
+- Do NOT add features, improvements, or nice-to-haves unless asked
+- Do NOT suggest additional work beyond scope
+- Do NOT implement multiple things when one requested
+- ASK if request unclear before proceeding
+
+**When Editing Files:**
+
+- Preserve existing formatting and indentation
+- No unnecessary comments unless requested
+- Follow existing patterns in file
+- Test changes before considering complete
+- Use #tool:edit/editFiles for precise edits
+- Use #tool:read/file to read before editing
+
+**When Creating Files:**
+
+- Only create files explicitly requested
+- Use consistent naming: PascalCase for components, camelCase for utilities
+- Place in appropriate directory per existing structure
+- Import existing dependencies from package.json
+- Match existing code style
+- Use #tool:edit/createFile
+
+**When Troubleshooting:**
+
+- Read error messages completely
+- Verify file paths absolute and correct for Windows
+- Check dependencies installed before suggesting code
+- Reference existing working code as examples
+- Use #tool:read/problems to check for errors
+- Use #tool:execute/runInTerminal for commands
+
+**When Suggesting Changes:**
+
+- Only suggest changes asked for
+- Prioritize existing patterns over new libraries
+- Consider backward compatibility with Phase 1
+- Reference ROADMAP.md for future architecture
+- Avoid premature optimization
+- Do not volunteer additional work
+
+**Constraints:**
+
+- No database in Phase 1 (file-based only)
+- No authentication in Phase 1 (single-user)
+- No external API calls except PokeAPI proxy
+- Must maintain Snooper JSON format compatibility
+- Must work offline (except PokeAPI enrichment)
+  </behavior_rules>

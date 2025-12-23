@@ -1,7 +1,7 @@
 // src/components/pokemon/PokemonCardSkeleton.tsx
 export function PokemonCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-800 overflow-hidden animate-pulse">
+    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-md dark:shadow-slate-950/50 border border-gray-200 dark:border-slate-700 overflow-hidden animate-pulse">
       <div className="p-3 flex items-center space-x-3 bg-linear-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 border-b border-gray-100 dark:border-slate-700">
         <div className="relative shrink-0">
           <div className="w-16 h-16 bg-gray-200 dark:bg-slate-700 rounded-full" />

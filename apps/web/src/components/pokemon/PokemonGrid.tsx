@@ -6,12 +6,14 @@ interface PokemonGridProps {
   pokemonList: EnrichedPokemon[];
   onPokemonClick: (pokemon: EnrichedPokemon) => void;
   emptyMessage?: string;
+  context?: "party" | "daycare" | "pc";
 }
 
 function PokemonGridComponent({
   pokemonList,
   onPokemonClick,
   emptyMessage = "No Pokémon found.",
+  context,
 }: PokemonGridProps) {
   if (pokemonList.length === 0) {
     return <p className="text-slate-500 text-sm italic">{emptyMessage}</p>;
@@ -24,6 +26,7 @@ function PokemonGridComponent({
           key={`${p.identity.uuid}-${idx}`}
           pokemon={p}
           onCardClick={onPokemonClick}
+          context={context}
         />
       ))}
     </div>

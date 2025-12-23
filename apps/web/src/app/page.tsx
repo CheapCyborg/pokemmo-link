@@ -15,6 +15,7 @@ import { Spinner } from "@/components/ui/spinner";
 
 import { useEnrichedPokemon } from "@/hooks/useEnrichedPokemon";
 import { useLiveData } from "@/hooks/useLiveData";
+import { getRegionForSlot } from "@/lib/constants/regions";
 
 export default function Page() {
   const [userProfileId] = useState<string>("local-poc");
@@ -22,6 +23,7 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState<"party" | "daycare" | "pc">(
     "party"
   );
+  const [daycareRegion, setDaycareRegion] = useState<string>("all");
 
   // Fetch live data
   const partyQuery = useLiveData("party");
@@ -40,9 +42,17 @@ export default function Page() {
     [daycareQuery.data?.pokemon]
   );
 
+  // Filter daycare by selected region
+  const filteredDaycareData = useMemo(() => {
+    if (daycareRegion === "all") return daycareData;
+    return daycareData.filter(
+      (p) => getRegionForSlot(p.slot) === daycareRegion
+    );
+  }, [daycareData, daycareRegion]);
+
   // --- Enrichment with Loading States ---
   const enrichedTeamState = useEnrichedPokemon(teamData);
-  const enrichedDaycareState = useEnrichedPokemon(daycareData);
+  const enrichedDaycareState = useEnrichedPokemon(filteredDaycareData);
 
   // --- Status ---
   const isLoading =
@@ -69,7 +79,9 @@ export default function Page() {
     activeTab === "party"
       ? `${teamData.length} / 6`
       : activeTab === "daycare"
-        ? `${daycareData.length}`
+        ? daycareRegion === "all"
+          ? `${daycareData.length}`
+          : `${filteredDaycareData.length} / ${daycareData.length}`
         : pcQuery.hasData
           ? "Stored"
           : "0";
@@ -93,7 +105,7 @@ export default function Page() {
 
         <div className="lg:col-span-3">
           {/* Top Bar */}
-          <div className="bg-white dark:bg-slate-900 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 mb-6 flex items-center gap-3">
+          <div className="bg-white dark:bg-slate-900 p-3 rounded-xl shadow-sm dark:shadow-slate-950/50 border border-slate-200 dark:border-slate-700 mb-6 flex items-center gap-3">
             <div className="relative grow">
               <input
                 type="text"
@@ -124,9 +136,23 @@ export default function Page() {
                   ? "Daycare"
                   : "PC Boxes"}
             </h2>
-            <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold px-3 py-1 rounded-full">
-              {countPill}
-            </span>
+            <div className="flex items-center gap-3">
+              {activeTab === "daycare" && (
+                <select
+                  value={daycareRegion}
+                  onChange={(e) => setDaycareRegion(e.target.value)}
+                  className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition shadow-sm dark:shadow-slate-950/30">
+                  <option value="all">All Regions</option>
+                  <option value="kanto">Kanto</option>
+                  <option value="hoenn">Hoenn</option>
+                  <option value="sinnoh">Sinnoh</option>
+                  <option value="unova">Unova</option>
+                </select>
+              )}
+              <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                {countPill}
+              </span>
+            </div>
           </div>
 
           {/* Content Area */}
@@ -146,6 +172,7 @@ export default function Page() {
                     pokemonList={enrichedTeamState.data ?? []}
                     onPokemonClick={handleOpenDetails}
                     emptyMessage="Party is empty."
+                    context="party"
                   />
                 ))}
 
@@ -157,6 +184,7 @@ export default function Page() {
                     pokemonList={enrichedDaycareState.data ?? []}
                     onPokemonClick={handleOpenDetails}
                     emptyMessage="Daycare is empty."
+                    context="daycare"
                   />
                 ))}
 

@@ -24,7 +24,7 @@ export const DashboardSidebar = ({
 
   return (
     <div className="lg:col-span-1 space-y-6">
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm dark:shadow-slate-950/50 border border-slate-200 dark:border-slate-700">
         <div className="flex flex-col items-center text-center mb-4">
           <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-3">
             <User size={32} />
@@ -45,7 +45,7 @@ export const DashboardSidebar = ({
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/50 border border-slate-200 dark:border-slate-700 overflow-hidden">
         <button
           onClick={() => setActiveTab("party")}
           className={[
@@ -62,7 +62,7 @@ export const DashboardSidebar = ({
           onClick={() => setActiveTab("daycare")}
           className={[
             "relative w-full px-4 py-3 text-left font-bold text-xs flex items-center transition-colors",
-            "border-t border-slate-100 dark:border-slate-800",
+            "border-t border-slate-100 dark:border-slate-700",
             activeTab === "daycare"
               ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-indigo-600 dark:before:bg-indigo-400"
               : "text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800",
@@ -74,7 +74,7 @@ export const DashboardSidebar = ({
           onClick={() => setActiveTab("pc")}
           className={[
             "relative w-full px-4 py-3 text-left font-bold text-xs flex items-center transition-colors",
-            "rounded-b-xl border-t border-slate-100 dark:border-slate-800", // keeps bottom corners rounded
+            "rounded-b-xl border-t border-slate-100 dark:border-slate-700", // keeps bottom corners rounded
             activeTab === "pc"
               ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-indigo-600 dark:before:bg-indigo-400 before:rounded-bl-xl"
               : "text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800",
@@ -83,7 +83,7 @@ export const DashboardSidebar = ({
         </button>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm dark:shadow-slate-950/50 border border-slate-200 dark:border-slate-700">
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-bold text-slate-700 dark:text-slate-200 flex items-center text-sm">
             <Users size={16} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Friends
