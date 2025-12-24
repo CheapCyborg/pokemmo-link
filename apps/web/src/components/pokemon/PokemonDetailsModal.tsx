@@ -90,11 +90,11 @@ export function PokemonDetailsModal({ open, onOpenChange, pokemon }: PokemonDeta
             {/* Title & Quick Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
-                <span className="font-mono text-slate-400 dark:text-slate-500 text-sm font-bold">
+                <span className="font-mono text-slate-400 dark:text-slate-500 text-base font-bold">
                   {pokemon.computed.dexNum}
                 </span>
                 <DialogTitle asChild>
-                  <h2 className="text-2xl font-extrabold truncate">{displayName}</h2>
+                  <h2 className="text-3xl font-extrabold truncate">{displayName}</h2>
                 </DialogTitle>
                 <button
                   onClick={playCry}
@@ -107,14 +107,14 @@ export function PokemonDetailsModal({ open, onOpenChange, pokemon }: PokemonDeta
               {/* Badges Row */}
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 {types.map((type) => (
-                  <TypeBadge key={type} type={type} size="sm" />
+                  <TypeBadge key={type} type={type} size="md" />
                 ))}
-                <NatureBadge nature={pokemon.state.nature} size="sm" />
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold">
+                <NatureBadge nature={pokemon.state.nature} size="md" />
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
                   Lv {pokemon.state.level}
                 </span>
                 {pokemon.state.current_hp !== null && pokemon.computed?.calculatedStats.hp ? (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-[10px] font-bold">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-bold">
                     HP {pokemon.state.current_hp}/{pokemon.computed.calculatedStats.hp}
                   </span>
                 ) : null}
@@ -122,27 +122,27 @@ export function PokemonDetailsModal({ open, onOpenChange, pokemon }: PokemonDeta
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                     {pokemon.computed.gender === "female" ? (
                       <>
-                        <Venus className="w-3 h-3 text-pink-500" />
-                        <span className="text-[10px] font-bold text-pink-600 dark:text-pink-400">Female</span>
+                        <Venus className="w-4 h-4 text-pink-500" />
+                        <span className="text-xs font-bold text-pink-600 dark:text-pink-400">Female</span>
                       </>
                     ) : (
                       <>
-                        <Mars className="w-3 h-3 text-blue-500" />
-                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Male</span>
+                        <Mars className="w-4 h-4 text-blue-500" />
+                        <span className="text-xs font-bold text-blue-600 dark:text-blue-400">Male</span>
                       </>
                     )}
                   </span>
                 )}
                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800/50">
-                  <Heart className="w-3 h-3 text-pink-500 fill-pink-500" />
-                  <span className="text-[10px] font-bold text-pink-700 dark:text-pink-400">
+                  <Heart className="w-4 h-4 text-pink-500 fill-pink-500" />
+                  <span className="text-xs font-bold text-pink-700 dark:text-pink-400">
                     {pokemon.state.happiness ?? "-"}
                   </span>
                 </div>
               </div>
 
               {/* Meta Info */}
-              <div className="text-xs text-slate-500 dark:text-slate-400 space-y-0.5">
+              <div className="text-sm text-slate-500 dark:text-slate-400 space-y-0.5">
                 {hasNickname && (
                   <div>
                     <span className="font-medium">

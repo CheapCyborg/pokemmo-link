@@ -160,8 +160,8 @@ const PokemonCardComponentOld = ({ pokemon, onCardClick, className, context, ...
               )}
             </div>
 
-            {/* Badges Row - Fixed Height h-10 (allows 2 rows) */}
-            <div className="flex flex-wrap gap-1 content-start h-10 overflow-hidden shrink-0">
+            {/* Badges Row - Fixed Height h-[20px] for consistent spacing */}
+            <div className="flex flex-wrap gap-1 content-start h-[20px] overflow-hidden shrink-0">
               <NatureBadge nature={pokemon.state.nature} size="xs" />
               {types.map((type) => (
                 <TypeBadge key={type} type={type} size="xs" />
@@ -172,7 +172,7 @@ const PokemonCardComponentOld = ({ pokemon, onCardClick, className, context, ...
             <div className="grow" />
 
             {/* Ability - Fixed Height h-4, tight to stats */}
-            <div className="flex items-baseline gap-1 text-[11px] leading-tight h-4 overflow-hidden shrink-0 mb-0.5">
+            <div className="flex items-baseline gap-1 text-[11px] leading-tight h-4 overflow-hidden shrink-0 mb-1">
               <span className="text-gray-400 dark:text-gray-500 font-bold text-[10px] uppercase tracking-wider shrink-0">
                 Ability
               </span>

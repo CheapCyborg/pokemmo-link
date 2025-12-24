@@ -60,7 +60,7 @@ export default function Page() {
         : "PC Boxes";
 
   return (
-    <div className="">
+    <div className="min-h-screen py-6 px-4 space-y-6 bg-slate-50 dark:bg-slate-900">
       <DashboardHeader
         isLive={hasData ? true : false}
         status={hasData ? "Live" : "Connecting..."}
@@ -76,7 +76,7 @@ export default function Page() {
           setActiveTab={setActiveTab}
         />
 
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 flex flex-col min-h-[70vh]">
           {/* Top Bar */}
           <div className="bg-white dark:bg-slate-900 p-3 rounded-xl shadow-sm dark:shadow-slate-950/50 border border-slate-200 dark:border-slate-700 mb-6 flex items-center gap-3">
             <div className="relative grow">

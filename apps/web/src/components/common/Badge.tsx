@@ -82,10 +82,10 @@ const badgeVariants = cva(
         error: "bg-red-100 text-red-700 border-red-200",
       },
       size: {
-        xs: "py-0 text-[8px] pl-1 pr-1.5 h-4 min-w-[32px]",
-        sm: "py-0.5 text-[9px] pl-1.5 pr-2.5 min-w-[40px]",
-        md: "py-0.5 text-[10px] pl-1.5 pr-2.5 min-w-[48px]",
-        lg: "py-1 text-xs pl-2 pr-3 min-w-[56px]",
+        xs: "text-[8px] w-[60px] h-[18px]",
+        sm: "text-[9px] w-[68px] h-[20px]",
+        md: "text-[10px] w-[76px] h-[22px]",
+        lg: "text-xs w-[84px] h-[24px]",
       },
     },
     defaultVariants: {

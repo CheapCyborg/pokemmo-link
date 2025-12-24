@@ -1,7 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
-
 
 @custom-variant dark (&:is(.dark *));
 
@@ -120,5 +119,8 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  main {
+    @apply min-h-screen;
   }
 }
