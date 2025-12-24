@@ -38,7 +38,7 @@ export function CardSkeleton() {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl shadow-md dark:shadow-slate-950/50 border border-slate-200 dark:border-slate-700 overflow-hidden">
       {/* Header */}
-      <div className="p-3 flex items-center space-x-3 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 border-b border-slate-100 dark:border-slate-700">
+      <div className="p-3 flex items-center space-x-3 bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 border-b border-slate-100 dark:border-slate-700">
         {/* Avatar */}
         <Skeleton className="w-16 h-16 rounded-full shrink-0" />
 

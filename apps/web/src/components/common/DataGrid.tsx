@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { AlertCircle, Lock } from "lucide-react";
-import { JSX, memo, type ReactNode } from "react";
+import type { JSX } from "react";
+import { memo, type ReactNode } from "react";
 
 /**
  * DataGrid renders a responsive grid of items with optional privacy controls.
@@ -112,10 +113,10 @@ export interface DataGridProps<T> {
  */
 function AccessDenied({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-      <Lock className="w-12 h-12 text-slate-400 dark:text-slate-600 mb-4" />
-      <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">Private Content</h3>
-      <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">{message}</p>
+    <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
+      <Lock className="mb-4 h-12 w-12 text-slate-400 dark:text-slate-600" />
+      <h3 className="mb-2 text-lg font-semibold text-slate-700 dark:text-slate-300">Private Content</h3>
+      <p className="max-w-md text-sm text-slate-500 dark:text-slate-400">{message}</p>
     </div>
   );
 }
@@ -125,9 +126,9 @@ function AccessDenied({ message }: { message: string }) {
  */
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-      <AlertCircle className="w-12 h-12 text-slate-300 dark:text-slate-700 mb-4" />
-      <p className="text-sm text-slate-500 dark:text-slate-400 italic">{message}</p>
+    <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
+      <AlertCircle className="mb-4 h-12 w-12 text-slate-300 dark:text-slate-700" />
+      <p className="text-sm text-slate-500 italic dark:text-slate-400">{message}</p>
     </div>
   );
 }
@@ -138,7 +139,7 @@ function EmptyState({ message }: { message: string }) {
 function DefaultSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="bg-slate-200 dark:bg-slate-800 rounded-lg h-48 w-full" />
+      <div className="h-48 w-full rounded-lg bg-slate-200 dark:bg-slate-800" />
     </div>
   );
 }
@@ -210,7 +211,7 @@ function DataGridComponent<T>({
   return (
     <div className={cn("grid", gridClasses, gapClass, className)}>
       {items.map((item, index) => (
-        <div key={getItemKey(item, index)} className="min-w-0 w-full h-full">
+        <div key={getItemKey(item, index)} className="h-full w-full min-w-0">
           {renderItem(item, index)}
         </div>
       ))}

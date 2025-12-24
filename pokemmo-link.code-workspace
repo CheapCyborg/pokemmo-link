@@ -22,6 +22,10 @@
     {
       "name": "Web (Next.js)",
       "path": "apps/web"
+    },
+    {
+      "name": "Boilerplate (Reference)",
+      "path": "../pokemmo-link-boilerplate"
     }
   ],
   "extensions": {
@@ -71,7 +75,7 @@
     "files.associations": {
       "*.css": "tailwindcss"
     },
-    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.tsdk": "apps/web/node_modules/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true,
     "typescript.preferences.includePackageJsonAutoImports": "on",
     "typescript.suggest.autoImports": true,
@@ -175,6 +179,15 @@
       "typescript",
       "typescriptreact"
     ],
+    "eslint.probe": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact"
+    ],
+    "eslint.lintTask.enable": true,
+    "eslint.format.enable": false,
+    "eslint.run": "onType",
     "tailwind-fold.autoFold": true,
     "tailwind-fold.foldStyle": "QUOTES",
     "tailwind-fold.unfoldIfLineSelected": true,
@@ -223,6 +236,7 @@
     "debug.showBreakpointsInOverviewRuler": true,
     "debug.toolBarLocation": "docked",
     "problems.decorations.enabled": true,
-    "problems.showCurrentInStatus": true
+    "problems.showCurrentInStatus": true,
+    "powershell.cwd": "Root"
   }
 }

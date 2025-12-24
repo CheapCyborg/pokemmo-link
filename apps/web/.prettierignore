@@ -5,27 +5,26 @@ node_modules/
 .next/
 out/
 build/
+dist/
 
-# Runtime data
+# Runtime data - PokeMMO Link specific
 data/
 dump-*.json
 
+# Generated files
+*.tsbuildinfo
+next-env.d.ts
+
 # Logs
 *.log
-
-# OS files
-.DS_Store
-
-# IDE
-.vscode/
-.idea/
-
-# Environment
-.env
-.env.local
-.env.*.local
 
 # Package manager
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# Vercel
+.vercel
+
+# TypeScript cache
+.turbo

@@ -66,7 +66,7 @@ export function PokemonCardHeader({ showOwner = false, context, className }: Pok
           <div className="bg-indigo-600 dark:bg-indigo-500 text-white text-[12px] px-2 py-0.5 rounded-md font-bold shadow-sm leading-none">
             Lv {pokemon.state.level}
           </div>
-          <div className="min-h-[14px] flex items-start justify-end">
+          <div className="min-h-3.5 flex items-start justify-end">
             {perfectIvCount > 0 && (
               <span className="text-[11px] font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded border border-green-200 dark:border-green-800 leading-none shadow-sm inline-block shrink-0 whitespace-nowrap">
                 {perfectIvCount}x31
@@ -101,14 +101,14 @@ export function PokemonCardHeader({ showOwner = false, context, className }: Pok
             </div>
 
             {/* Species Name */}
-            <div className="min-h-[14px]">
+            <div className="min-h-3.5">
               <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide truncate leading-tight">
                 {speciesName}
               </p>
             </div>
 
             {/* Badges Row */}
-            <div className="min-h-[20px] flex flex-wrap gap-1.5 content-start shrink-0 mt-0.5 justify-start">
+            <div className="min-h-5 flex flex-wrap gap-1.5 content-start shrink-0 mt-0.5 justify-start">
               <NatureBadge nature={pokemon.state.nature} size="xs" />
               {types.map((type) => (
                 <TypeBadge key={type} type={type} size="xs" />

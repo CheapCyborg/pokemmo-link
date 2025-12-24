@@ -96,3 +96,4 @@ apps/agent/output/
 
 example/
 
+.chrome-debug-profile/
